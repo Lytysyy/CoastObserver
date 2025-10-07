@@ -15,7 +15,7 @@ Le projet illustre une approche **hypermédia**, car il relie différents types 
 - Développer une application web permettant la **collecte participative de photos** du littoral.  
 - Créer une **base de données** pour stocker les utilisateurs, les images et leurs métadonnées selon le secteur , site .  
 - Mettre en place une **carte interactive** pour visualiser les observations citoyennes.  
-- Valoriser les **données multimédias** grâce à une représentation **RDF/Turtle** (`sosa:Observation`, `schema:ImageObject`).  
+- Valoriser les **données multimédias**.  
 - Promouvoir la **science citoyenne** et la **sensibilisation environnementale** via les technologies du web.  
 
 
@@ -29,16 +29,14 @@ Le projet illustre une approche **hypermédia**, car il relie différents types 
 
 ##  Technologies utilisées
 - PHP / MySQL: gestion des utilisateurs, stockage et traitement des données.  
-- JavaScript : interactions et affichage dynamique.    
-- JSON / RDF : échanges de données et représentation sémantique.  
+- JavaScript : interactions et affichage dynamique.     
 - HTML5 / CSS3 : structure, design et documentation.  
 - Mermaid: création du diagramme entité–relation (ER).  
 
 ##  Données et multimédia
 - **Images** : photos des côtes prises par les utilisateurs.  
 - **Métadonnées** : auteur, date, heure, coordonnées GPS, commentaire, site observé.  
-- **Carte interactive (Leaflet + OSM)** : affichage géographique des observations.  
-- **Formats de données** : JSON (échange client/serveur) et RDF/Turtle (structuration sémantique).  
+- **Formats de données** : JSON  
 - **Médias combinés** : texte, image, géolocalisation et données.  
 
 Ces éléments multimédias sont interconnectés et consultables par navigation interactive, démontrant la **dimension hypermédia** du projet.
