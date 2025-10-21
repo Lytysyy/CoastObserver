@@ -1,185 +1,99 @@
-
 @prefix dcterms: <http://purl.org/dc/terms/> .
-@prefix owl: <http://www.w3.org/2002/07/owl#> .
-@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix vs: <http://www.w3.org/2003/06/sw-vocab-status/ns#> .
-@prefix o: <http://omeka.org/s/vocabs/o#> .
-@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
-@prefix jdc: <https://jardindesconnaissances.univ-paris8.fr/onto/jdc#> .
-@prefix ma: <http://www.w3.org/ns/ma-ont#>.
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix vs:      <http://www.w3.org/2003/06/sw-vocab-status/ns#> .
+@prefix o:       <http://omeka.org/s/vocabs/o#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
 
-<https://jardindesconnaissances.univ-paris8.fr/onto/jdc#> a owl:Ontology ;
-    dcterms:title "Jardin des connaissances" .
+# Choisis un namespace pérenne pour ton projet :
+@prefix gd:      <https://vocab.geodune.org/> .
 
-jdc:SemanticPosition a rdfs:Class ;
-    rdfs:label "SemanticPosition" ;
-    rdfs:domain o:Resource ;
-    vs:term_status "experimental" .
+<https://vocab.geodune.org/>
+  a owl:Ontology ;
+  dcterms:title "Geodune Vocabulary" ;
+  dcterms:creator "Projet Geodune" ;
+  dcterms:description "Vocabulaire RDF pour contributions et mesures de marée (Geodune)." ;
+  dcterms:license <https://creativecommons.org/publicdomain/zero/1.0/> .
 
-jdc:Crible a rdfs:Class ;
-    rdfs:label "Crible" ;
-    rdfs:domain o:Resource ;
-    vs:term_status "experimental" .
+#########
+# Classes
+#########
 
-jdc:CriblePosition a rdfs:Class ;
-    rdfs:label "CriblePosition" ;
-    rdfs:domain o:Resource ;
-    vs:term_status "experimental" .
+gd:Contribution a rdfs:Class ;
+  rdfs:label "Contribution" ;
+  rdfs:comment "Une contribution importée (ligne CSV, saisie utilisateur…)" ;
+  rdfs:subClassOf o:Resource ;
+  vs:term_status "experimental" .
 
-jdc:CribleCarto a rdfs:Class ;
-    rdfs:label "Cartographie d'un crible" ;
-    rdfs:domain o:Resource ;
-    vs:term_status "experimental" .
+gd:Station a rdfs:Class ;
+  rdfs:label "Station" ;
+  rdfs:comment "Point de mesure ou plage." ;
+  rdfs:subClassOf o:Resource ;
+  vs:term_status "experimental" .
 
-jdc:Actant a rdfs:Class ;
-    rdfs:label "Actant" ;
-    rdfs:domain o:Resource ;
-    vs:term_status "experimental" .
+gd:MesureMaree a rdfs:Class ;
+  rdfs:label "Mesure de marée" ;
+  rdfs:comment "Une observation ponctuelle de la marée (hauteur, heure…)" ;
+  rdfs:subClassOf o:Resource ;
+  vs:term_status "experimental" .
 
-jdc:Existence a rdfs:Class ;
-    rdfs:label "Existence" ;
-    rdfs:domain o:Resource ;
-    vs:term_status "experimental" .
+#############
+# Propriétés
+#############
 
-jdc:Physique a rdfs:Class ;
-    rdfs:label "Physique" ;
-    rdfs:domain o:Resource ;
-    vs:term_status "experimental" .
+gd:secteur a rdf:Property ;
+  rdfs:label "secteur" ;
+  rdfs:comment "Secteur géographique : cote_dopale, ter_bessin…" ;
+  rdfs:domain o:Resource ;
+  rdfs:range xsd:string ;
+  vs:term_status "experimental" .
 
-jdc:Rapport a rdfs:Class ;
-    rdfs:label "Rapport" ;
-    rdfs:domain o:Resource ;
-    vs:term_status "experimental" .
+gd:plage a rdf:Property ;
+  rdfs:label "plage" ;
+  rdfs:domain o:Resource ;
+  rdfs:range xsd:string ;
+  vs:term_status "experimental" .
 
-jdc:Archetype a rdfs:Class ;
-    rdfs:label "Archetype" ;
-    rdfs:domain o:Resource ;
-    vs:term_status "experimental" .
+gd:latitude a rdf:Property ;
+  rdfs:label "latitude" ;
+  rdfs:domain o:Resource ;
+  rdfs:range xsd:decimal ;
+  vs:term_status "experimental" .
 
+gd:longitude a rdf:Property ;
+  rdfs:label "longitude" ;
+  rdfs:domain o:Resource ;
+  rdfs:range xsd:decimal ;
+  vs:term_status "experimental" .
 
-jdc:Concept a rdfs:Class ;
-    rdfs:label "Concept" ;
-    rdfs:domain o:Resource ;
-    owl:sameAs skos:Concept;
-    vs:term_status "experimental" .
+gd:hauteurMaree a rdf:Property ;
+  rdfs:label "hauteur de marée (m)" ;
+  rdfs:domain gd:MesureMaree ;
+  rdfs:range xsd:decimal ;
+  vs:term_status "experimental" .
 
-jdc:x a rdf:Property ;
-    rdfs:label "x" ;
-    rdfs:domain o:Resource ;
-    vs:term_status "experimental" .
+gd:instantMesure a rdf:Property ;
+  rdfs:label "instant de mesure" ;
+  rdfs:domain gd:MesureMaree ;
+  rdfs:range xsd:dateTime ;
+  vs:term_status "experimental" .
 
-jdc:y a rdf:Property ;
-    rdfs:label "y" ;
-    rdfs:domain o:Resource ;
-    vs:term_status "experimental" .
+gd:sourceCSV a rdf:Property ;
+  rdfs:label "source CSV" ;
+  rdfs:comment "Nom du fichier CSV ou URL source" ;
+  rdfs:domain gd:Contribution ;
+  rdfs:range xsd:string ;
+  vs:term_status "experimental" .
 
-jdc:xRatingValue a rdf:Property ;
-    rdfs:label "xRatingValue" ;
-    rdfs:domain o:Resource ;
-    vs:term_status "experimental" .
+gd:aPourStation a rdf:Property ;
+  rdfs:label "a pour station" ;
+  rdfs:domain o:Resource ;
+  rdfs:range gd:Station ;
+  vs:term_status "experimental" .
 
-jdc:yRatingValue a rdf:Property ;
-    rdfs:label "yRatingValue" ;
-    rdfs:domain o:Resource ;
-    vs:term_status "experimental" .
-
-jdc:degradName a rdf:Property ;
-    rdfs:label "degradName" ;
-    rdfs:domain o:Resource ;
-    vs:term_status "experimental" .
-
-jdc:degradColors a rdf:Property ;
-    rdfs:label "degradColors" ;
-    rdfs:domain o:Resource ;
-    vs:term_status "experimental" .
-
-jdc:creationDate a rdf:Property ;
-    rdfs:label "creationDate" ;
-    rdfs:domain o:Resource .
-
-jdc:hasExistence a rdf:Property ;
-    rdfs:label "a comme existence" ;
-    rdfs:domain o:Resource ;
-    vs:term_status "experimental" .
-
-jdc:hasActant a rdf:Property ;
-    rdfs:label "a comme actant" ;
-    rdfs:domain o:Resource ;
-    vs:term_status "experimental" .
-
-jdc:hasPhysique a rdf:Property ;
-    rdfs:label "a comme physique" ;
-    rdfs:domain o:Resource ;
-    vs:term_status "experimental" .
-
-jdc:hasConcept a rdf:Property ;
-    rdfs:label "a comme concept" ;
-    rdfs:domain o:Resource ;
-    vs:term_status "experimental" .
-
-jdc:hasRapport a rdf:Property ;
-    rdfs:label "a comme rapport" ;
-    rdfs:domain o:Resource ;
-    vs:term_status "experimental" .
-
-jdc:hasCrible a rdf:Property ;
-    rdfs:label "a comme crible" ;
-    rdfs:domain o:Resource ;
-    vs:term_status "experimental" .
-
-jdc:cribleLabel a rdf:Property ;
-    rdfs:label "cribleLabel" ;
-    rdfs:domain o:Resource ;
-    vs:term_status "experimental" .
-
-jdc:cribleId a rdf:Property ;
-    rdfs:label "cribleId" ;
-    rdfs:domain o:Resource ;
-    vs:term_status "experimental" .
-
-jdc:cribleRatingValue a rdf:Property ;
-    rdfs:label "cribleRatingValue" ;
-    rdfs:domain o:Resource ;
-    vs:term_status "experimental" .
-
-jdc:distanceCenter a rdf:Property ;
-    rdfs:label "distance du centre" ;
-    rdfs:domain o:Resource ;
-    vs:term_status "experimental" .
-
-jdc:distanceConcept a rdf:Property ;
-    rdfs:label "distance du concept" ;
-    rdfs:domain o:Resource ;
-    vs:term_status "experimental" .
-
-jdc:ordreCrible a rdf:Property ;
-    rdfs:label "Ordre dans le crible" ;
-    rdfs:domain o:Resource ;
-    vs:term_status "experimental" .
-
-jdc:hasCribleCarto a rdf:Property ;
-    rdfs:label "a comme cartographie" ;
-    rdfs:domain o:Resource ;
-    vs:term_status "experimental" .
-
-jdc:hasSujet a rdf:Property ;
-    rdfs:label "a comme sujet" ;
-    rdfs:domain o:Resource ;
-    vs:term_status "experimental" .
-jdc:hasObjet a rdf:Property ;
-    rdfs:label "a comme objet" ;
-    rdfs:domain o:Resource ;
-    vs:term_status "experimental" .
-jdc:hasPredicat a rdf:Property ;
-    rdfs:label "a comme prédicat" ;
-    rdfs:domain o:Resource ;
-    vs:term_status "experimental" .
-jdc:hasMenu a rdf:Property ;
-    rdfs:label "a comme menu" ;
-    rdfs:domain o:Resource ;
-    vs:term_status "experimental" .
-jdc:hasArchetype a rdf:Property ;
-    rdfs:label "a comme archetype" ;
-    rdfs:domain o:Resource ;
-    vs:term_status "experimental" .
+gd:aPourMesure a rdf:Property ;
+  rdfs:label "a pour mesure de marée" ;
+  rdfs:domain o:Resource ;
+  rdfs:range gd:MesureMaree ;
+  vs:term_status "experimental" .
