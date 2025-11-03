@@ -1,99 +1,50 @@
-@prefix dcterms: <http://purl.org/dc/terms/> .
-@prefix owl:     <http://www.w3.org/2002/07/owl#> .
-@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
-@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix vs:      <http://www.w3.org/2003/06/sw-vocab-status/ns#> .
-@prefix o:       <http://omeka.org/s/vocabs/o#> .
-@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
 
-# Choisis un namespace pérenne pour ton projet :
-@prefix gd:      <https://vocab.geodune.org/> .
+@prefix coast: <https://lytysyy.github.io/CoastObserver/vocab#> .
+@base <https://lytysyy.github.io/CoastObserver/vocab> .
 
-<https://vocab.geodune.org/>
+<https://lytysyy.github.io/CoastObserver/vocab>
   a owl:Ontology ;
-  dcterms:title "Geodune Vocabulary" ;
-  dcterms:creator "Projet Geodune" ;
-  dcterms:description "Vocabulaire RDF pour contributions et mesures de marée (Geodune)." ;
-  dcterms:license <https://creativecommons.org/publicdomain/zero/1.0/> .
+  dct:title "Vocabulaire CoastObserver (simple)"@fr ;
+  dct:description "Vocabulaire minimal pour Omeka S avec une seule classe Observation et un champ secteur (texte)."@fr ;
+  owl:versionInfo "1.0.0"@fr .
 
-#########
-# Classes
-#########
+###########
+# CLASSE  #
+###########
 
-gd:Contribution a rdfs:Class ;
-  rdfs:label "Contribution" ;
-  rdfs:comment "Une contribution importée (ligne CSV, saisie utilisateur…)" ;
-  rdfs:subClassOf o:Resource ;
-  vs:term_status "experimental" .
+coast:Observation a owl:Class ;
+  rdfs:label "Observation"@fr ;
+  rdfs:comment "Observation minimale (titre, secteur, date, lieu, notes)."@fr .
 
-gd:Station a rdfs:Class ;
-  rdfs:label "Station" ;
-  rdfs:comment "Point de mesure ou plage." ;
-  rdfs:subClassOf o:Resource ;
-  vs:term_status "experimental" .
+################
+# PROPRIÉTÉS  #
+################
 
-gd:MesureMaree a rdfs:Class ;
-  rdfs:label "Mesure de marée" ;
-  rdfs:comment "Une observation ponctuelle de la marée (hauteur, heure…)" ;
-  rdfs:subClassOf o:Resource ;
-  vs:term_status "experimental" .
+coast:secteur a owl:DatatypeProperty ;
+  rdfs:label "Secteur"@fr ;
+  rdfs:comment "Nom du secteur étudié (valeur texte)."@fr ;
+  rdfs:domain coast:Observation ;
+  rdfs:range xsd:string .
 
-#############
-# Propriétés
-#############
+coast:dateObservation a owl:DatatypeProperty ;
+  rdfs:label "Date de l’observation"@fr ;
+  rdfs:comment "Date au format YYYY-MM-DD."@fr ;
+  rdfs:domain coast:Observation ;
+  rdfs:range xsd:date .
 
-gd:secteur a rdf:Property ;
-  rdfs:label "secteur" ;
-  rdfs:comment "Secteur géographique : cote_dopale, ter_bessin…" ;
-  rdfs:domain o:Resource ;
-  rdfs:range xsd:string ;
-  vs:term_status "experimental" .
+coast:lieu a owl:DatatypeProperty ;
+  rdfs:label "Lieu"@fr ;
+  rdfs:comment "Toponyme ou description courte."@fr ;
+  rdfs:domain coast:Observation ;
+  rdfs:range xsd:string .
 
-gd:plage a rdf:Property ;
-  rdfs:label "plage" ;
-  rdfs:domain o:Resource ;
-  rdfs:range xsd:string ;
-  vs:term_status "experimental" .
-
-gd:latitude a rdf:Property ;
-  rdfs:label "latitude" ;
-  rdfs:domain o:Resource ;
-  rdfs:range xsd:decimal ;
-  vs:term_status "experimental" .
-
-gd:longitude a rdf:Property ;
-  rdfs:label "longitude" ;
-  rdfs:domain o:Resource ;
-  rdfs:range xsd:decimal ;
-  vs:term_status "experimental" .
-
-gd:hauteurMaree a rdf:Property ;
-  rdfs:label "hauteur de marée (m)" ;
-  rdfs:domain gd:MesureMaree ;
-  rdfs:range xsd:decimal ;
-  vs:term_status "experimental" .
-
-gd:instantMesure a rdf:Property ;
-  rdfs:label "instant de mesure" ;
-  rdfs:domain gd:MesureMaree ;
-  rdfs:range xsd:dateTime ;
-  vs:term_status "experimental" .
-
-gd:sourceCSV a rdf:Property ;
-  rdfs:label "source CSV" ;
-  rdfs:comment "Nom du fichier CSV ou URL source" ;
-  rdfs:domain gd:Contribution ;
-  rdfs:range xsd:string ;
-  vs:term_status "experimental" .
-
-gd:aPourStation a rdf:Property ;
-  rdfs:label "a pour station" ;
-  rdfs:domain o:Resource ;
-  rdfs:range gd:Station ;
-  vs:term_status "experimental" .
-
-gd:aPourMesure a rdf:Property ;
-  rdfs:label "a pour mesure de marée" ;
-  rdfs:domain o:Resource ;
-  rdfs:range gd:MesureMaree ;
-  vs:term_status "experimental" .
+coast:notes a owl:DatatypeProperty ;
+  rdfs:label "Notes"@fr ;
+  rdfs:comment "Notes libres."@fr ;
+  rdfs:domain coast:Observation ;
+  rdfs:range xsd:string .
