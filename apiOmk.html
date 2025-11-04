@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>Lecture et écriture</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    body { margin: 24px; }
+    h1 { margin: 0 0 16px; }
+    fieldset { border: 1px solid #ddd; border-radius: 10px; padding: 16px; margin: 0 0 16px; }
+    legend { padding: 0 8px; font-weight: 600; }
+    label { display: block; margin: 10px 0 6px; font-weight: 600; }
+    input[type="text"], input[type="number"], textarea {
+      width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box;
+    }
+    button {
+      padding: 10px 16px; border: 0; border-radius: 10px; cursor: pointer;
+      background: #111; color: #fff; font-weight: 600; margin-right: 8px;
+    }
+    button.secondary { background: #eee; color: #111; }
+    .row { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+    .muted { color: #666; font-size: 0.9em; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #eee; }
+    pre { background: #f7f7f7; padding: 12px; border-radius: 8px; overflow: auto; }
+    .grid { display: grid; gap: 16px; grid-template-columns: 1fr; }
+    @media (min-width: 1100px) { .grid { grid-template-columns: 1.1fr 0.9fr; } }
+    .card { border: 1px solid #eee; border-radius: 12px; padding: 16px; }
+  </style>
+</head>
+<body>
+  <h1>lecture et écriture</h1>
+  <p class="muted">
+   
+  </p>
+
+  <fieldset>
+    <legend>Configuration</legend>
+    <div class="row">
+      <div>
+        <label>Base API OMeka </label>
+        <input id="apiBase" type="text" placeholder="https://mon-omeka.org/api" />
+        <div class="muted"> <code></code>  <code></code></div>
+      </div>
+      <div>
+        <label>key_identity</label>
+        <input id="keyId" type="text" placeholder="clé identité…" />
+      </div>
+      <div>
+        <label>key_credential</label>
+        <input id="keySecret" type="text" placeholder="clé secret…" />
+      </div>
+    </div>
+  </fieldset>
+
+  <div class="grid">
+    <!-- LECTURE -->
+    <div class="card">
+      <fieldset>
+        <legend>Lire des items</legend>
+        <div class="row">
+          <div>
+            <label>Recherche  texte </label>
+            <input id="q" type="text" placeholder="ex : dune, mer, sel…" />
+          </div>
+          <div>
+            <label>Filtrer par Item Set ID </label>
+            <input id="itemSetId" type="number" min="1" placeholder="ex : 1" />
+          </div>
+          <div>
+            <label>Nombre max </label>
+            <input id="perPage" type="number" min="1" value="25" />
+          </div>
+        </div>
+        <div style="margin-top:10px;">
+          <button id="btnFetch">Lister les items</button>
+          <button class="secondary" id="btnClearRead">Effacer</button>
+        </div>
+        <div id="readStatus" class="muted" style="margin-top:8px;"></div>
+        <div id="readTable"></div>
+        <details style="margin-top:10px;">
+          <summary>Réponse JSON</summary>
+          <pre id="rawRead"></pre>
+        </details>
+      </fieldset>
+    </div>
+
+    <!-- ECRITURE -->
+    <div class="card">
+      <fieldset>
+        <legend>Créer un item</legend>
+        <div class="row">
+          <div>
+            <label>Titre (dcterms:title)</label>
+            <input id="title" type="text" placeholder="Titre de l’item" />
+          </div>
+          <div>
+            <label>Description (dcterms:description)</label>
+            <textarea id="description" rows="4" placeholder="Courte description…"></textarea>
+          </div>
+          <div>
+            <label>Item Set ID (o:item_set)</label>
+            <input id="newItemSetId" type="number" min="1" placeholder="ex : 1" />
+          </div>
+          <div>
+            <label>Resource </label>
+            <input id="resourceTemplateId" type="number" min="1" placeholder="ex : 2" />
+          </div>
+        </div>
+        <details style="margin-top:8px;">
+          <summary>Propriété supplémentaire </summary>
+          <div class="row">
+            <div>
+              <label>Terme RDF (ex : dcterms:creator)</label>
+              <input id="extraTerm" type="text" placeholder="dcterms:creator" />
+            </div>
+            <div>
+              <label>Valeur </label>
+              <input id="extraValue" type="text" placeholder="Nom du créateur…" />
+            </div>
+          </div>
+        </details>
+        <div style="margin-top:10px;">
+          <button id="btnCreate">Créer l’item</button>
+          <button class="secondary" id="btnClearWrite">Effacer</button>
+        </div>
+        <div id="writeStatus" class="muted" style="margin-top:8px;"></div>
+        <details style="margin-top:10px;">
+          <summary>Payload envoyé et réponse</summary>
+          <pre id="rawWrite"></pre>
+        </details>
+      </fieldset>
+    </div>
+  </div>
+
+  <script>
+    // ------ Petites utilitaires ------
+    const $ = sel => document.querySelector(sel);
+    const esc = s => (s ?? "").toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+
+    function buildApiUrl(path) {
+      const base = $('#apiBase').value.trim().replace(/\/+$/, '');
+      if (!base) throw new Error("Renseigne l’URL de base de l’API OMeka S.");
+      const url = new URL(base + path);
+      const keyId = $('#keyId').value.trim();
+      const keySecret = $('#keySecret').value.trim();
+      if (keyId && keySecret) {
+        url.searchParams.set('key_identity', keyId);
+        url.searchParams.set('key_credential', keySecret);
+      }
+      return url.toString();
+    }
+
+    async function apiGet(path) {
+      const url = buildApiUrl(path);
+      const res = await fetch(url, { method: 'GET' });
+      if (!res.ok) throw new Error(`GET ${url} → ${res.status} ${res.statusText}`);
+      return res.json();
+    }
+
+    async function apiPost(path, bodyObj) {
+      const url = buildApiUrl(path);
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bodyObj)
+      });
+      const text = await res.text(); // récupère texte brut (utile si pas du JSON)
+      let data;
+      try { data = JSON.parse(text); } catch { data = text; }
+      if (!res.ok) {
+        throw new Error(`POST ${url} → ${res.status} ${res.statusText}\n${text}`);
+      }
+      return data;
+    }
+
+    // ------ Lecture ------
+    $('#btnFetch').addEventListener('click', async () => {
+      $('#readStatus').textContent = 'Chargement…';
+      $('#readTable').innerHTML = '';
+      $('#rawRead').textContent = '';
+
+      try {
+        const params = new URLSearchParams();
+        const q = $('#q').value.trim();
+        const itemSetId = $('#itemSetId').value.trim();
+        const perPage = $('#perPage').value.trim() || '25';
+        if (q) params.set('search', q);          // plein texte
+        if (itemSetId) params.set('item_set_id', itemSetId);
+        if (perPage) params.set('per_page', perPage);
+
+        const data = await apiGet(`/items?${params.toString()}`);
+
+        // Affichage tableau
+        const rows = (Array.isArray(data) ? data : []).map(it => {
+          const id = esc(it['o:id']);
+          const title = (it['dcterms:title'] && it['dcterms:title'][0] && it['dcterms:title'][0]['@value']) || '(sans titre)';
+          const updated = esc(it['o:modified'] || it['o:created'] || '');
+          return `<tr>
+            <td>#${id}</td>
+            <td>${esc(title)}</td>
+            <td>${updated.replace('T',' ').replace('Z','')}</td>
+          </tr>`;
+        }).join('');
+
+        $('#readTable').innerHTML = rows
+          ? `<table><thead><tr><th>ID</th><th>Titre</th><th>Modifié</th></tr></thead><tbody>${rows}</tbody></table>`
+          : `<div class="muted">Aucun résultat.</div>`;
+
+        $('#rawRead').textContent = JSON.stringify(data, null, 2);
+        $('#readStatus').textContent = `OK — ${Array.isArray(data) ? data.length : 0} item(s)`;
+      } catch (err) {
+        $('#readStatus').textContent = 'Erreur : ' + err.message;
+      }
+    });
+
+    $('#btnClearRead').addEventListener('click', () => {
+      $('#q').value = '';
+      $('#itemSetId').value = '';
+      $('#perPage').value = 25;
+      $('#readStatus').textContent = '';
+      $('#readTable').innerHTML = '';
+      $('#rawRead').textContent = '';
+    });
+
+    // ------ Écriture ------
+    $('#btnCreate').addEventListener('click', async () => {
+      $('#writeStatus').textContent = 'Envoi…';
+      $('#rawWrite').textContent = '';
+
+      try {
+        const title = $('#title').value.trim();
+        const description = $('#description').value.trim();
+        const itemSetId = $('#newItemSetId').value.trim();
+        const resourceTemplateId = $('#resourceTemplateId').value.trim();
+        const extraTerm = $('#extraTerm').value.trim();
+        const extraValue = $('#extraValue').value.trim();
+
+        if (!title) throw new Error('Le titre est requis pour créer un item.');
+        if (!itemSetId) throw new Error('Indique un Item Set ID.');
+
+        // Payload JSON-LD pour Omeka S
+        const payload = {
+          "o:item_set": [ { "o:id": Number(itemSetId) } ],
+          // Permet à Omeka de déduire l’ID de propriété à partir du terme (feature "auto")
+          "dcterms:title": [ { "type": "literal", "property_id": "auto", "@value": title } ],
+          "dcterms:description": description
+            ? [ { "type": "literal", "property_id": "auto", "@value": description } ] : []
+        };
+
+        if (resourceTemplateId) {
+          payload["o:resource_template"] = { "o:id": Number(resourceTemplateId) };
+        }
+
+        if (extraTerm && extraValue) {
+          payload[extraTerm] = [ { "type": "literal", "property_id": "auto", "@value": extraValue } ];
+        }
+
+        $('#rawWrite').textContent = 'Payload →\n' + JSON.stringify(payload, null, 2);
+
+        const created = await apiPost('/items', payload);
+        $('#writeStatus').textContent = 'Créé ✔︎  ID = ' + (created && created['o:id']);
+        $('#rawWrite').textContent += '\n\nRéponse ←\n' + JSON.stringify(created, null, 2);
+
+      } catch (err) {
+        $('#writeStatus').textContent = 'Erreur : ' + err.message;
+      }
+    });
+
+    $('#btnClearWrite').addEventListener('click', () => {
+      $('#title').value = '';
+      $('#description').value = '';
+      $('#newItemSetId').value = '';
+      $('#resourceTemplateId').value = '';
+      $('#extraTerm').value = '';
+      $('#extraValue').value = '';
+      $('#writeStatus').textContent = '';
+      $('#rawWrite').textContent = '';
+    });
+  </script>
+</body>
+</html>
