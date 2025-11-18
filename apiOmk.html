@@ -38,16 +38,8 @@
     <div class="row">
       <div>
         <label>Base API OMeka </label>
-        <input id="apiBase" type="text" placeholder="https://mon-omeka.org/api" />
-        <div class="muted"><code></code> <code></code></div>
-      </div>
-      <div>
-        <label>key_identity</label>
-        <input id="keyId" type="text" placeholder="clé identité…" />
-      </div>
-      <div>
-        <label>key_credential</label>
-        <input id="keySecret" type="text" placeholder="clé secret…" />
+        <input id="apiBase" type="text" placeholder="http://localhost/omk_THyp_25-26_clone/api" />
+        <div class="muted"><code>Ex : http://localhost/omk_THyp_25-26_clone/api</code></div>
       </div>
     </div>
   </fieldset>
@@ -59,11 +51,11 @@
         <legend>Lire des items</legend>
         <div class="row">
           <div>
-            <label>Recherche  texte </label>
+            <label>Recherche texte </label>
             <input id="q" type="text" placeholder="ex : dune, mer, sel…" />
           </div>
           <div>
-            <label>Filtrer par Item Set ID </label>
+            <label>Filtrer par Item Set ID (optionnel)</label>
             <input id="itemSetId" type="number" min="1" placeholder="ex : 1" />
           </div>
           <div>
@@ -98,8 +90,8 @@
             <textarea id="description" rows="4" placeholder="Courte description…"></textarea>
           </div>
           <div>
-            <label>Item Set ID (o:item_set)</label>
-            <input id="newItemSetId" type="number" min="1" placeholder="ex : 1" />
+            <label>Item Set ID (o:item_set) – optionnel</label>
+            <input id="newItemSetId" type="number" min="1" placeholder="laisser vide pour aucun Item Set" />
           </div>
           <div>
             <label>Resource </label>
@@ -130,7 +122,6 @@
         </details>
       </fieldset>
 
-      <!-- AJOUT DE MEDIA (audio / vidéo) -->
       <fieldset style="margin-top:16px;">
         <legend>Ajouter un média (audio / vidéo) à un item</legend>
         <div class="row">
@@ -148,7 +139,6 @@
           </div>
         </div>
 
-        <!-- Bloc d’enregistrement vocal -->
         <div style="margin-top:12px;">
           <label>Enregistrer un message vocal</label>
           <div style="margin-bottom:6px;">
@@ -175,20 +165,23 @@
   </div>
 
   <script>
-    // ------ Petites utilitaires ------
     const $ = sel => document.querySelector(sel);
     const esc = s => (s ?? "").toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+
+    // CLÉS API FIXES (identity / credential)
+    const API_KEY_ID = 'ab2dPIwoP9u6JJQTEy8aieh0GPaTcj6E';       // identity
+    const API_KEY_SECRET = 'zd3HJsk8bvzP79eR89VW7af4mdLelGdU';   // credential
 
     function buildApiUrl(path) {
       const base = $('#apiBase').value.trim().replace(/\/+$/, '');
       if (!base) throw new Error("Renseigne l’URL de base de l’API OMeka S.");
       const url = new URL(base + path);
-      const keyId = $('#keyId').value.trim();
-      const keySecret = $('#keySecret').value.trim();
-      if (keyId && keySecret) {
-        url.searchParams.set('key_identity', keyId);
-        url.searchParams.set('key_credential', keySecret);
+
+      if (API_KEY_ID && API_KEY_SECRET) {
+        url.searchParams.set('key_identity', API_KEY_ID);
+        url.searchParams.set('key_credential', API_KEY_SECRET);
       }
+
       return url.toString();
     }
 
@@ -215,7 +208,6 @@
       return data;
     }
 
-    // ------ POST avec FormData pour les fichiers ------
     async function apiPostForm(path, formData) {
       const url = buildApiUrl(path);
       const res = await fetch(url, {
@@ -231,7 +223,6 @@
       return data;
     }
 
-    // ------ Enregistrement audio (MediaRecorder) ------
     let mediaRecorder = null;
     let recordedChunks = [];
     let recordedBlob = null;
@@ -284,7 +275,6 @@
       btnStop.disabled = true;
     }
 
-    // ------ Lecture : liste des items ------
     $('#btnFetch').addEventListener('click', async () => {
       $('#readStatus').textContent = 'Chargement…';
       $('#readTable').innerHTML = '';
@@ -340,20 +330,22 @@
       try {
         const title = $('#title').value.trim();
         const description = $('#description').value.trim();
-        const itemSetId = $('#newItemSetId').value.trim();
+        const itemSetId = $('#newItemSetId').value.trim();      // Optionnel
         const resourceTemplateId = $('#resourceTemplateId').value.trim();
         const extraTerm = $('#extraTerm').value.trim();
         const extraValue = $('#extraValue').value.trim();
 
         if (!title) throw new Error('Le titre est requis pour créer un item.');
-        if (!itemSetId) throw new Error('Indique un Item Set ID.');
 
         const payload = {
-          "o:item_set": [ { "o:id": Number(itemSetId) } ],
           "dcterms:title": [ { "type": "literal", "property_id": "auto", "@value": title } ],
           "dcterms:description": description
             ? [ { "type": "literal", "property_id": "auto", "@value": description } ] : []
         };
+
+        if (itemSetId) {
+          payload["o:item_set"] = [ { "o:id": Number(itemSetId) } ];
+        }
 
         if (resourceTemplateId) {
           payload["o:resource_template"] = { "o:id": Number(resourceTemplateId) };
@@ -399,7 +391,6 @@
 
         let file = fileInput.files[0];
 
-        // Si aucun fichier choisi mais un enregistrement existe, on l’utilise
         if (!file && recordedBlob) {
           file = new File(
             [recordedBlob],
@@ -457,7 +448,6 @@
       $('#mediaStatus').textContent = '';
       $('#rawMedia').textContent = '';
 
-      // Reset enregistrement
       recordedChunks = [];
       recordedBlob = null;
       const audioPreview = $('#audioPreview');
@@ -474,7 +464,6 @@
       }
     });
 
-    // Boutons d'enregistrement audio
     $('#btnStartRec').addEventListener('click', () => {
       startRecording();
     });
