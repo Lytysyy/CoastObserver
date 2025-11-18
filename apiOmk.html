@@ -31,9 +31,7 @@
 </head>
 <body>
   <h1>lecture et écriture</h1>
-  <p class="muted">
-   
-  </p>
+  <p class="muted"></p>
 
   <fieldset>
     <legend>Configuration</legend>
@@ -41,7 +39,7 @@
       <div>
         <label>Base API OMeka </label>
         <input id="apiBase" type="text" placeholder="https://mon-omeka.org/api" />
-        <div class="muted"> <code></code>  <code></code></div>
+        <div class="muted"><code></code> <code></code></div>
       </div>
       <div>
         <label>key_identity</label>
@@ -149,6 +147,20 @@
             <input id="mediaLabel" type="text" placeholder="Titre du média (optionnel)" />
           </div>
         </div>
+
+        <!-- Bloc d’enregistrement vocal -->
+        <div style="margin-top:12px;">
+          <label>Enregistrer un message vocal</label>
+          <div style="margin-bottom:6px;">
+            <button type="button" id="btnStartRec">Démarrer l’enregistrement</button>
+            <button type="button" class="secondary" id="btnStopRec" disabled>Arrêter</button>
+          </div>
+          <div class="muted">
+            Le navigateur demandera l’autorisation d’utiliser le micro.
+          </div>
+          <audio id="audioPreview" controls style="margin-top:8px; display:none;"></audio>
+        </div>
+
         <div style="margin-top:10px;">
           <button id="btnAddMedia">Ajouter le média</button>
           <button class="secondary" id="btnClearMedia">Effacer</button>
@@ -194,7 +206,7 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(bodyObj)
       });
-      const text = await res.text(); // récupère texte brut (utile si pas du JSON)
+      const text = await res.text();
       let data;
       try { data = JSON.parse(text); } catch { data = text; }
       if (!res.ok) {
@@ -219,7 +231,60 @@
       return data;
     }
 
-    // ------ Lecture ------
+    // ------ Enregistrement audio (MediaRecorder) ------
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let recordedBlob = null;
+
+    async function startRecording() {
+      const btnStart = $('#btnStartRec');
+      const btnStop = $('#btnStopRec');
+      const audioPreview = $('#audioPreview');
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+        recordedChunks = [];
+        recordedBlob = null;
+
+        mediaRecorder = new MediaRecorder(stream);
+
+        mediaRecorder.ondataavailable = e => {
+          if (e.data && e.data.size > 0) {
+            recordedChunks.push(e.data);
+          }
+        };
+
+        mediaRecorder.onstop = () => {
+          recordedBlob = new Blob(recordedChunks, { type: 'audio/webm' });
+          const url = URL.createObjectURL(recordedBlob);
+          audioPreview.src = url;
+          audioPreview.style.display = 'block';
+          stream.getTracks().forEach(t => t.stop());
+        };
+
+        mediaRecorder.start();
+
+        btnStart.disabled = true;
+        btnStop.disabled = false;
+      } catch (err) {
+        alert("Impossible d'accéder au micro : " + err.message);
+      }
+    }
+
+    function stopRecording() {
+      const btnStart = $('#btnStartRec');
+      const btnStop = $('#btnStopRec');
+
+      if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+      }
+
+      btnStart.disabled = false;
+      btnStop.disabled = true;
+    }
+
+    // ------ Lecture : liste des items ------
     $('#btnFetch').addEventListener('click', async () => {
       $('#readStatus').textContent = 'Chargement…';
       $('#readTable').innerHTML = '';
@@ -230,13 +295,12 @@
         const q = $('#q').value.trim();
         const itemSetId = $('#itemSetId').value.trim();
         const perPage = $('#perPage').value.trim() || '25';
-        if (q) params.set('search', q);          // plein texte
+        if (q) params.set('search', q);
         if (itemSetId) params.set('item_set_id', itemSetId);
         if (perPage) params.set('per_page', perPage);
 
         const data = await apiGet(`/items?${params.toString()}`);
 
-        // Affichage tableau
         const rows = (Array.isArray(data) ? data : []).map(it => {
           const id = esc(it['o:id']);
           const title = (it['dcterms:title'] && it['dcterms:title'][0] && it['dcterms:title'][0]['@value']) || '(sans titre)';
@@ -284,10 +348,8 @@
         if (!title) throw new Error('Le titre est requis pour créer un item.');
         if (!itemSetId) throw new Error('Indique un Item Set ID.');
 
-        // Payload JSON-LD pour Omeka S
         const payload = {
           "o:item_set": [ { "o:id": Number(itemSetId) } ],
-          // Permet à Omeka de déduire l’ID de propriété à partir du terme (feature "auto")
           "dcterms:title": [ { "type": "literal", "property_id": "auto", "@value": title } ],
           "dcterms:description": description
             ? [ { "type": "literal", "property_id": "auto", "@value": description } ] : []
@@ -323,63 +385,103 @@
       $('#rawWrite').textContent = '';
     });
 
-   // ------ Écriture : ajout de média (audio / vidéo) ------
-$('#btnAddMedia').addEventListener('click', async () => {
-  $('#mediaStatus').textContent = 'Envoi du média…';
-  $('#rawMedia').textContent = '';
+    // ------ Écriture : ajout de média (audio / vidéo) ------
+    $('#btnAddMedia').addEventListener('click', async () => {
+      $('#mediaStatus').textContent = 'Envoi du média…';
+      $('#rawMedia').textContent = '';
 
-  try {
-    const itemId = $('#mediaItemId').value.trim();
-    const fileInput = $('#mediaFile');
-    const label = $('#mediaLabel').value.trim();
+      try {
+        const itemId = $('#mediaItemId').value.trim();
+        const fileInput = $('#mediaFile');
+        const label = $('#mediaLabel').value.trim();
 
-    if (!itemId) throw new Error("Indique l'ID de l’item.");
-    if (!fileInput.files.length) throw new Error('Choisis un fichier audio ou vidéo.');
+        if (!itemId) throw new Error("Indique l'ID de l’item.");
 
-    const file = fileInput.files[0];
+        let file = fileInput.files[0];
 
-    // ---- IMPORTANT : construire l'objet JSON attendu par Omeka ----
-    const mediaData = {
-      "o:item": { "o:id": Number(itemId) },
-      "o:ingester": "upload",   // ingester "upload" pour un fichier envoyé
-      "file_index": 0,          // on utilise file[0]
-      "o:is_public": true
-    };
-
-    // si tu veux mettre un "titre" au média
-    if (label) {
-      mediaData["dcterms:title"] = [
-        {
-          "type": "literal",
-          "property_id": "auto",
-          "@value": label
+        // Si aucun fichier choisi mais un enregistrement existe, on l’utilise
+        if (!file && recordedBlob) {
+          file = new File(
+            [recordedBlob],
+            'enregistrement.webm',
+            { type: recordedBlob.type || 'audio/webm' }
+          );
         }
-      ];
-    }
 
-    const fd = new FormData();
-    // le JSON doit être dans le champ "data"
-    fd.append('data', JSON.stringify(mediaData));
-    // le fichier dans file[0]
-    fd.append('file[0]', file);
+        if (!file) {
+          throw new Error('Choisis un fichier audio / vidéo ou enregistre un message vocal.');
+        }
 
-    $('#rawMedia').textContent =
-      'Payload JSON (champ data) →\n' +
-      JSON.stringify(mediaData, null, 2) +
-      '\n\nFichier → ' + file.name;
+        const mediaData = {
+          "o:item": { "o:id": Number(itemId) },
+          "o:ingester": "upload",
+          "file_index": 0,
+          "o:is_public": true
+        };
 
-    const createdMedia = await apiPostForm('/media', fd);
+        if (label) {
+          mediaData["dcterms:title"] = [
+            {
+              "type": "literal",
+              "property_id": "auto",
+              "@value": label
+            }
+          ];
+        }
 
-    $('#mediaStatus').textContent =
-      'Média ajouté ✔︎  ID = ' + (createdMedia && createdMedia['o:id']);
-    $('#rawMedia').textContent +=
-      '\n\nRéponse ←\n' + JSON.stringify(createdMedia, null, 2);
+        const fd = new FormData();
+        fd.append('data', JSON.stringify(mediaData));
+        fd.append('file[0]', file);
 
-  } catch (err) {
-    $('#mediaStatus').textContent = 'Erreur : ' + err.message;
-  }
-});
+        $('#rawMedia').textContent =
+          'Payload JSON (champ data) →\n' +
+          JSON.stringify(mediaData, null, 2) +
+          '\n\nFichier → ' + file.name;
 
+        const createdMedia = await apiPostForm('/media', fd);
+
+        $('#mediaStatus').textContent =
+          'Média ajouté ✔︎  ID = ' + (createdMedia && createdMedia['o:id']);
+        $('#rawMedia').textContent +=
+          '\n\nRéponse ←\n' + JSON.stringify(createdMedia, null, 2);
+
+      } catch (err) {
+        $('#mediaStatus').textContent = 'Erreur : ' + err.message;
+      }
+    });
+
+    $('#btnClearMedia').addEventListener('click', () => {
+      $('#mediaItemId').value = '';
+      $('#mediaFile').value = '';
+      $('#mediaLabel').value = '';
+      $('#mediaStatus').textContent = '';
+      $('#rawMedia').textContent = '';
+
+      // Reset enregistrement
+      recordedChunks = [];
+      recordedBlob = null;
+      const audioPreview = $('#audioPreview');
+      audioPreview.removeAttribute('src');
+      audioPreview.style.display = 'none';
+
+      const btnStart = $('#btnStartRec');
+      const btnStop = $('#btnStopRec');
+      btnStart.disabled = false;
+      btnStop.disabled = true;
+
+      if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+      }
+    });
+
+    // Boutons d'enregistrement audio
+    $('#btnStartRec').addEventListener('click', () => {
+      startRecording();
+    });
+
+    $('#btnStopRec').addEventListener('click', () => {
+      stopRecording();
+    });
   </script>
 </body>
 </html>
