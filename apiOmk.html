@@ -2,186 +2,479 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <title>Lecture et écriture</title>
+  <title>Interface Omeka – Simple</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <style>
-    :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
-    body { margin: 24px; }
-    h1 { margin: 0 0 16px; }
-    fieldset { border: 1px solid #ddd; border-radius: 10px; padding: 16px; margin: 0 0 16px; }
-    legend { padding: 0 8px; font-weight: 600; }
-    label { display: block; margin: 10px 0 6px; font-weight: 600; }
-    input[type="text"], input[type="number"], textarea {
-      width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box;
+    :root {
+      --bg-page: #f5f5f7;
+      --bg-card: #ffffff;
+      --border: #e0e0e5;
+      --border-strong: #c7c7d0;
+      --primary: #2563eb;
+      --primary-soft: #e3edff;
+      --danger: #dc2626;
+      --text-main: #111827;
+      --text-muted: #6b7280;
+      --radius-lg: 16px;
+      --radius-md: 10px;
+      --shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
     }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: var(--bg-page);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 1080px;
+      background: var(--bg-card);
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      padding: 18px 18px 20px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .title h1 {
+      margin: 0;
+      font-size: 19px;
+      font-weight: 600;
+    }
+
+    .title small {
+      display: block;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .tag {
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #f9fafb;
+    }
+
+    @media (max-width: 900px) {
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 14px;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      padding: 14px 14px 12px;
+    }
+
+    .card + .card {
+      margin-top: 10px;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .card-title span.icon {
+      font-size: 16px;
+    }
+
+    fieldset {
+      border: 0;
+      margin: 0;
+      padding: 0;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      margin: 4px 0 4px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 10px 12px;
+      align-items: flex-start;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    textarea {
+      width: 100%;
+      padding: 8px 9px;
+      border-radius: 9px;
+      border: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 70px;
+      max-height: 180px;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: #9ca3af;
+    }
+
+    input:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 1px var(--primary-soft);
+      background: #ffffff;
+    }
+
+    input[type="file"] {
+      padding: 6px 0;
+      border: none;
+      background: transparent;
+    }
+
+    .hint {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
     button {
-      padding: 10px 16px; border: 0; border-radius: 10px; cursor: pointer;
-      background: #111; color: #fff; font-weight: 600; margin-right: 8px;
+      border: none;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
-    button.secondary { background: #eee; color: #111; }
-    .row { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
-    .muted { color: #666; font-size: 0.9em; }
-    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
-    th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #eee; }
-    pre { background: #f7f7f7; padding: 12px; border-radius: 8px; overflow: auto; }
-    .grid { display: grid; gap: 16px; grid-template-columns: 1fr; }
-    @media (min-width: 1100px) { .grid { grid-template-columns: 1.1fr 0.9fr; } }
-    .card { border: 1px solid #eee; border-radius: 12px; padding: 16px; }
+
+    button.primary {
+      background: var(--primary);
+      color: #ffffff;
+    }
+
+    button.secondary {
+      background: #f3f4f6;
+      color: #111827;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+
+    .status {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 6px;
+      min-height: 16px;
+    }
+
+    .status.error {
+      color: var(--danger);
+    }
+
+    .status.ok {
+      color: #15803d;
+    }
+
+    details {
+      margin-top: 8px;
+      font-size: 12px;
+    }
+
+    summary {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    pre {
+      margin-top: 4px;
+      max-height: 200px;
+      overflow: auto;
+      font-size: 11px;
+      background: #0f172a;
+      color: #e5e7eb;
+      padding: 8px 9px;
+      border-radius: var(--radius-md);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 13px;
+    }
+
+    th,
+    td {
+      padding: 6px 7px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+    }
+
+    th {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    tr:hover td {
+      background: #f3f4f6;
+    }
+
+    /* AUDIO */
+
+    .audio-card {
+      margin-top: 8px;
+      padding: 10px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-strong);
+      background: #fafbff;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .audio-btn-circle {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      border: 2px solid var(--primary);
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    }
+
+    .audio-btn-circle.recording {
+      border-color: var(--danger);
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .audio-text-main {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .audio-text-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    audio {
+      width: 100%;
+      margin-top: 8px;
+    }
   </style>
 </head>
+
 <body>
-  <h1>lecture et écriture</h1>
-  <p class="muted"></p>
-
-  <fieldset>
-    <legend>Configuration</legend>
-    <div class="row">
-      <div>
-        <label>Base API OMeka </label>
-        <input id="apiBase" type="text" placeholder="http://localhost/omk_THyp_25-26_clone/api" />
-        <div class="muted"><code>Ex : http://localhost/omk_THyp_25-26_clone/api</code></div>
+  <div class="app">
+    <header>
+      <div class="title">
+        <h1>Interface Omeka</h1>
+        <small>Lecture des items, création, média (fichier ou audio).</small>
       </div>
-    </div>
-  </fieldset>
+      <div class="tag">Instance : Geodune</div>
+    </header>
 
-  <div class="grid">
-    <!-- LECTURE -->
-    <div class="card">
+    <!-- CONFIG -->
+    <section class="card">
+      <div class="card-title">
+        <span class="icon">⚙️</span> API
+      </div>
       <fieldset>
-        <legend>Lire des items</legend>
         <div class="row">
           <div>
-            <label>Recherche texte </label>
-            <input id="q" type="text" placeholder="ex : dune, mer, sel…" />
-          </div>
-          <div>
-            <label>Filtrer par Item Set ID (optionnel)</label>
-            <input id="itemSetId" type="number" min="1" placeholder="ex : 1" />
-          </div>
-          <div>
-            <label>Nombre max </label>
-            <input id="perPage" type="number" min="1" value="25" />
+            <label for="apiBase">URL de base</label>
+            <input id="apiBase" type="text" placeholder="http://localhost/omk_THyp_25-26_clone/api" />
+            <p class="hint">Exemple : http://localhost/omk_THyp_25-26_clone/api</p>
           </div>
         </div>
-        <div style="margin-top:10px;">
-          <button id="btnFetch">Lister les items</button>
-          <button class="secondary" id="btnClearRead">Effacer</button>
-        </div>
-        <div id="readStatus" class="muted" style="margin-top:8px;"></div>
-        <div id="readTable"></div>
-        <details style="margin-top:10px;">
-          <summary>Réponse JSON</summary>
-          <pre id="rawRead"></pre>
-        </details>
       </fieldset>
-    </div>
+    </section>
 
-    <!-- ECRITURE -->
-    <div class="card">
-      <fieldset>
-        <legend>Créer un item</legend>
-        <div class="row">
-          <div>
-            <label>Titre (dcterms:title)</label>
-            <input id="title" type="text" placeholder="Titre de l’item" />
-          </div>
-          <div>
-            <label>Description (dcterms:description)</label>
-            <textarea id="description" rows="4" placeholder="Courte description…"></textarea>
-          </div>
-          <div>
-            <label>Item Set ID (o:item_set) – optionnel</label>
-            <input id="newItemSetId" type="number" min="1" placeholder="laisser vide pour aucun Item Set" />
-          </div>
-          <div>
-            <label>Resource </label>
-            <input id="resourceTemplateId" type="number" min="1" placeholder="ex : 2" />
-          </div>
+    <div class="grid">
+      <!-- ITEMS -->
+      <section class="card">
+        <div class="card-title">
+          <span class="icon">📦</span> Items
         </div>
-        <details style="margin-top:8px;">
-          <summary>Propriété supplémentaire </summary>
+        <fieldset>
+          <!-- LECTURE -->
           <div class="row">
             <div>
-              <label>Terme RDF (ex : dcterms:creator)</label>
-              <input id="extraTerm" type="text" placeholder="dcterms:creator" />
+              <label for="q">Recherche</label>
+              <input id="q" type="text" placeholder="texte à chercher" />
             </div>
             <div>
-              <label>Valeur </label>
-              <input id="extraValue" type="text" placeholder="Nom du créateur…" />
+              <label for="perPage">Nombre max</label>
+              <input id="perPage" type="number" min="1" value="25" />
             </div>
           </div>
-        </details>
-        <div style="margin-top:10px;">
-          <button id="btnCreate">Créer l’item</button>
-          <button class="secondary" id="btnClearWrite">Effacer</button>
-        </div>
-        <div id="writeStatus" class="muted" style="margin-top:8px;"></div>
-        <details style="margin-top:10px;">
-          <summary>Payload envoyé et réponse</summary>
-          <pre id="rawWrite"></pre>
-        </details>
-      </fieldset>
 
-      <fieldset style="margin-top:16px;">
-        <legend>Ajouter un média (audio / vidéo) à un item</legend>
-        <div class="row">
-          <div>
-            <label>ID de l’item (o:item)</label>
-            <input id="mediaItemId" type="number" min="1" placeholder="ex : 1" />
+          <div class="btn-row">
+            <button id="btnFetch" class="primary" type="button">Lister</button>
+            <button id="btnClearRead" class="secondary" type="button">Vider</button>
           </div>
-          <div>
-            <label>Fichier audio / vidéo</label>
-            <input id="mediaFile" type="file" accept="audio/*,video/*" />
-          </div>
-          <div>
-            <label>Label du média (o:label)</label>
-            <input id="mediaLabel" type="text" placeholder="Titre du média (optionnel)" />
-          </div>
-        </div>
 
-        <div style="margin-top:12px;">
-          <label>Enregistrer un message vocal</label>
-          <div style="margin-bottom:6px;">
-            <button type="button" id="btnStartRec">Démarrer l’enregistrement</button>
-            <button type="button" class="secondary" id="btnStopRec" disabled>Arrêter</button>
-          </div>
-          <div class="muted">
-            Le navigateur demandera l’autorisation d’utiliser le micro.
-          </div>
-          <audio id="audioPreview" controls style="margin-top:8px; display:none;"></audio>
-        </div>
+          <div id="readStatus" class="status"></div>
+          <div id="readTable"></div>
 
-        <div style="margin-top:10px;">
-          <button id="btnAddMedia">Ajouter le média</button>
-          <button class="secondary" id="btnClearMedia">Effacer</button>
+          <details>
+            <summary>JSON items</summary>
+            <pre id="rawRead"></pre>
+          </details>
+
+          <hr style="border:none;border-top:1px solid #e5e7eb;margin:14px 0;">
+
+          <!-- CREATION -->
+          <div class="row">
+            <div>
+              <label for="title">Titre (obligatoire)</label>
+              <input id="title" type="text" placeholder="Titre de l’item" />
+            </div>
+            <div>
+              <label for="description">Description</label>
+              <textarea id="description" placeholder="(facultatif)"></textarea>
+            </div>
+          </div>
+
+          <div class="btn-row">
+            <button id="btnCreate" class="primary" type="button">Créer l’item</button>
+            <button id="btnClearWrite" class="secondary" type="button">Vider</button>
+          </div>
+
+          <div id="writeStatus" class="status"></div>
+
+          <details>
+            <summary>JSON création</summary>
+            <pre id="rawWrite"></pre>
+          </details>
+        </fieldset>
+      </section>
+
+      <!-- MEDIA + AUDIO -->
+      <section class="card">
+        <div class="card-title">
+          <span class="icon">🎧</span> Média
         </div>
-        <div id="mediaStatus" class="muted" style="margin-top:8px;"></div>
-        <details style="margin-top:10px;">
-          <summary>Réponse média</summary>
-          <pre id="rawMedia"></pre>
-        </details>
-      </fieldset>
+        <fieldset>
+          <div class="row">
+            <div>
+              <label for="mediaItemId">ID de l’item</label>
+              <input id="mediaItemId" type="number" min="1" placeholder="ex : 1" />
+            </div>
+            <div>
+              <label for="mediaFile">Fichier (audio / vidéo)</label>
+              <input id="mediaFile" type="file" accept="audio/*,video/*" />
+              <p class="hint">Tu peux aussi enregistrer un audio ci-dessous.</p>
+            </div>
+          </div>
+
+          <!-- AUDIO -->
+          <div class="audio-card">
+            <div class="audio-btn-circle" id="btnRecord" title="Enregistrer / arrêter">
+              ●
+            </div>
+            <div>
+              <div class="audio-text-main" id="audioStatusMain">Enregistrement audio</div>
+              <div class="audio-text-sub" id="audioStatusSub">Cliquer pour enregistrer, recliquer pour arrêter.</div>
+            </div>
+          </div>
+          <audio id="audioPreview" controls style="display:none;"></audio>
+
+          <div class="btn-row" style="margin-top:10px;">
+            <button id="btnAddMedia" class="primary" type="button">Envoyer le média</button>
+            <button id="btnClearMedia" class="secondary" type="button">Vider</button>
+          </div>
+
+          <div id="mediaStatus" class="status"></div>
+
+          <details>
+            <summary>JSON média</summary>
+            <pre id="rawMedia"></pre>
+          </details>
+        </fieldset>
+      </section>
     </div>
   </div>
 
   <script>
     const $ = sel => document.querySelector(sel);
-    const esc = s => (s ?? "").toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+    const esc = s => (s ?? "").toString().replace(/[&<>"']/g, c => (
+      {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]
+    ));
 
-    // CLÉS API FIXES (identity / credential)
-    const API_KEY_ID = 'ab2dPIwoP9u6JJQTEy8aieh0GPaTcj6E';       // identity
-    const API_KEY_SECRET = 'zd3HJsk8bvzP79eR89VW7af4mdLelGdU';   // credential
+    // CLÉS API FIXES
+    const API_KEY_ID = 'ab2dPIwoP9u6JJQTEy8aieh0GPaTcj6E';
+    const API_KEY_SECRET = 'zd3HJsk8bvzP79eR89VW7af4mdLelGdU';
 
     function buildApiUrl(path) {
       const base = $('#apiBase').value.trim().replace(/\/+$/, '');
-      if (!base) throw new Error("Renseigne l’URL de base de l’API OMeka S.");
+      if (!base) throw new Error("URL API manquante.");
       const url = new URL(base + path);
-
       if (API_KEY_ID && API_KEY_SECRET) {
         url.searchParams.set('key_identity', API_KEY_ID);
         url.searchParams.set('key_credential', API_KEY_SECRET);
       }
-
       return url.toString();
     }
 
@@ -223,22 +516,25 @@
       return data;
     }
 
+    // AUDIO
     let mediaRecorder = null;
     let recordedChunks = [];
     let recordedBlob = null;
+    let mediaStream = null;
+    let isRecording = false;
 
     async function startRecording() {
-      const btnStart = $('#btnStartRec');
-      const btnStop = $('#btnStopRec');
+      const btn = $('#btnRecord');
+      const statusMain = $('#audioStatusMain');
+      const statusSub = $('#audioStatusSub');
       const audioPreview = $('#audioPreview');
 
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
+        mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         recordedChunks = [];
         recordedBlob = null;
 
-        mediaRecorder = new MediaRecorder(stream);
+        mediaRecorder = new MediaRecorder(mediaStream);
 
         mediaRecorder.ondataavailable = e => {
           if (e.data && e.data.size > 0) {
@@ -247,46 +543,66 @@
         };
 
         mediaRecorder.onstop = () => {
+          if (mediaStream) {
+            mediaStream.getTracks().forEach(t => t.stop());
+            mediaStream = null;
+          }
           recordedBlob = new Blob(recordedChunks, { type: 'audio/webm' });
           const url = URL.createObjectURL(recordedBlob);
           audioPreview.src = url;
           audioPreview.style.display = 'block';
-          stream.getTracks().forEach(t => t.stop());
         };
 
         mediaRecorder.start();
-
-        btnStart.disabled = true;
-        btnStop.disabled = false;
+        isRecording = true;
+        btn.classList.add('recording');
+        statusMain.textContent = "Enregistrement en cours…";
+        statusSub.textContent = "Cliquer pour arrêter.";
       } catch (err) {
-        alert("Impossible d'accéder au micro : " + err.message);
+        alert("Micro non disponible : " + err.message);
+        statusMain.textContent = "Erreur micro";
+        statusSub.textContent = err.message;
       }
     }
 
     function stopRecording() {
-      const btnStart = $('#btnStartRec');
-      const btnStop = $('#btnStopRec');
+      const btn = $('#btnRecord');
+      const statusMain = $('#audioStatusMain');
+      const statusSub = $('#audioStatusSub');
 
       if (mediaRecorder && mediaRecorder.state === 'recording') {
         mediaRecorder.stop();
       }
-
-      btnStart.disabled = false;
-      btnStop.disabled = true;
+      isRecording = false;
+      btn.classList.remove('recording');
+      statusMain.textContent = "Enregistrement audio";
+      statusSub.textContent = "Cliquer pour enregistrer, recliquer pour arrêter.";
     }
 
+    $('#btnRecord').addEventListener('click', () => {
+      if (!isRecording) {
+        startRecording();
+      } else {
+        stopRecording();
+      }
+    });
+
+    // LECTURE ITEMS
     $('#btnFetch').addEventListener('click', async () => {
-      $('#readStatus').textContent = 'Chargement…';
+      const status = $('#readStatus');
+      const btn = $('#btnFetch');
+
+      status.textContent = 'Chargement…';
+      status.className = 'status';
       $('#readTable').innerHTML = '';
       $('#rawRead').textContent = '';
+      btn.disabled = true;
 
       try {
         const params = new URLSearchParams();
         const q = $('#q').value.trim();
-        const itemSetId = $('#itemSetId').value.trim();
         const perPage = $('#perPage').value.trim() || '25';
         if (q) params.set('search', q);
-        if (itemSetId) params.set('item_set_id', itemSetId);
         if (perPage) params.set('per_page', perPage);
 
         const data = await apiGet(`/items?${params.toString()}`);
@@ -304,90 +620,94 @@
 
         $('#readTable').innerHTML = rows
           ? `<table><thead><tr><th>ID</th><th>Titre</th><th>Modifié</th></tr></thead><tbody>${rows}</tbody></table>`
-          : `<div class="muted">Aucun résultat.</div>`;
+          : '<div class="hint" style="margin-top:6px;">Aucun résultat.</div>';
 
         $('#rawRead').textContent = JSON.stringify(data, null, 2);
-        $('#readStatus').textContent = `OK — ${Array.isArray(data) ? data.length : 0} item(s)`;
+        status.textContent = `OK – ${Array.isArray(data) ? data.length : 0} item(s).`;
+        status.className = 'status ok';
       } catch (err) {
-        $('#readStatus').textContent = 'Erreur : ' + err.message;
+        status.textContent = 'Erreur : ' + err.message;
+        status.className = 'status error';
+      } finally {
+        btn.disabled = false;
       }
     });
 
     $('#btnClearRead').addEventListener('click', () => {
       $('#q').value = '';
-      $('#itemSetId').value = '';
       $('#perPage').value = 25;
       $('#readStatus').textContent = '';
+      $('#readStatus').className = 'status';
       $('#readTable').innerHTML = '';
       $('#rawRead').textContent = '';
     });
 
-    // ------ Écriture : création d'item ------
+    // CREATION ITEM
     $('#btnCreate').addEventListener('click', async () => {
-      $('#writeStatus').textContent = 'Envoi…';
+      const status = $('#writeStatus');
+      const btn = $('#btnCreate');
+
+      status.textContent = 'Envoi…';
+      status.className = 'status';
       $('#rawWrite').textContent = '';
+      btn.disabled = true;
 
       try {
         const title = $('#title').value.trim();
         const description = $('#description').value.trim();
-        const itemSetId = $('#newItemSetId').value.trim();      // Optionnel
-        const resourceTemplateId = $('#resourceTemplateId').value.trim();
-        const extraTerm = $('#extraTerm').value.trim();
-        const extraValue = $('#extraValue').value.trim();
 
-        if (!title) throw new Error('Le titre est requis pour créer un item.');
+        if (!title) throw new Error('Titre obligatoire.');
 
         const payload = {
-          "dcterms:title": [ { "type": "literal", "property_id": "auto", "@value": title } ],
+          "dcterms:title": [{ "type": "literal", "@value": title }],
           "dcterms:description": description
-            ? [ { "type": "literal", "property_id": "auto", "@value": description } ] : []
+            ? [{ "type": "literal", "@value": description }] : [],
+          "o:is_public": true
         };
-
-        if (itemSetId) {
-          payload["o:item_set"] = [ { "o:id": Number(itemSetId) } ];
-        }
-
-        if (resourceTemplateId) {
-          payload["o:resource_template"] = { "o:id": Number(resourceTemplateId) };
-        }
-
-        if (extraTerm && extraValue) {
-          payload[extraTerm] = [ { "type": "literal", "property_id": "auto", "@value": extraValue } ];
-        }
 
         $('#rawWrite').textContent = 'Payload →\n' + JSON.stringify(payload, null, 2);
 
         const created = await apiPost('/items', payload);
-        $('#writeStatus').textContent = 'Créé ✔︎  ID = ' + (created && created['o:id']);
+        const newId = created && created['o:id'];
+
+        status.textContent = 'Item créé – ID ' + newId;
+        status.className = 'status ok';
         $('#rawWrite').textContent += '\n\nRéponse ←\n' + JSON.stringify(created, null, 2);
 
+        if (newId) {
+          $('#mediaItemId').value = newId;
+        }
       } catch (err) {
-        $('#writeStatus').textContent = 'Erreur : ' + err.message;
+        status.textContent = 'Erreur : ' + err.message;
+        status.className = 'status error';
+      } finally {
+        btn.disabled = false;
       }
     });
 
     $('#btnClearWrite').addEventListener('click', () => {
       $('#title').value = '';
       $('#description').value = '';
-      $('#newItemSetId').value = '';
-      $('#resourceTemplateId').value = '';
-      $('#extraTerm').value = '';
-      $('#extraValue').value = '';
       $('#writeStatus').textContent = '';
+      $('#writeStatus').className = 'status';
       $('#rawWrite').textContent = '';
     });
 
-    // ------ Écriture : ajout de média (audio / vidéo) ------
+    // MEDIA
     $('#btnAddMedia').addEventListener('click', async () => {
-      $('#mediaStatus').textContent = 'Envoi du média…';
+      const status = $('#mediaStatus');
+      const btn = $('#btnAddMedia');
+
+      status.textContent = 'Envoi…';
+      status.className = 'status';
       $('#rawMedia').textContent = '';
+      btn.disabled = true;
 
       try {
         const itemId = $('#mediaItemId').value.trim();
         const fileInput = $('#mediaFile');
-        const label = $('#mediaLabel').value.trim();
 
-        if (!itemId) throw new Error("Indique l'ID de l’item.");
+        if (!itemId) throw new Error("ID d’item obligatoire.");
 
         let file = fileInput.files[0];
 
@@ -400,7 +720,7 @@
         }
 
         if (!file) {
-          throw new Error('Choisis un fichier audio / vidéo ou enregistre un message vocal.');
+          throw new Error('Choisis un fichier ou enregistre un audio.');
         }
 
         const mediaData = {
@@ -410,42 +730,36 @@
           "o:is_public": true
         };
 
-        if (label) {
-          mediaData["dcterms:title"] = [
-            {
-              "type": "literal",
-              "property_id": "auto",
-              "@value": label
-            }
-          ];
-        }
-
         const fd = new FormData();
         fd.append('data', JSON.stringify(mediaData));
         fd.append('file[0]', file);
 
         $('#rawMedia').textContent =
-          'Payload JSON (champ data) →\n' +
-          JSON.stringify(mediaData, null, 2) +
+          'Payload →\n' + JSON.stringify(mediaData, null, 2) +
           '\n\nFichier → ' + file.name;
 
         const createdMedia = await apiPostForm('/media', fd);
 
-        $('#mediaStatus').textContent =
-          'Média ajouté ✔︎  ID = ' + (createdMedia && createdMedia['o:id']);
+        status.textContent =
+          'Média ajouté – ID ' + (createdMedia && createdMedia['o:id']) +
+          ' (item ' + itemId + ')';
+        status.className = 'status ok';
+
         $('#rawMedia').textContent +=
           '\n\nRéponse ←\n' + JSON.stringify(createdMedia, null, 2);
-
       } catch (err) {
-        $('#mediaStatus').textContent = 'Erreur : ' + err.message;
+        status.textContent = 'Erreur : ' + err.message;
+        status.className = 'status error';
+      } finally {
+        btn.disabled = false;
       }
     });
 
     $('#btnClearMedia').addEventListener('click', () => {
       $('#mediaItemId').value = '';
       $('#mediaFile').value = '';
-      $('#mediaLabel').value = '';
       $('#mediaStatus').textContent = '';
+      $('#mediaStatus').className = 'status';
       $('#rawMedia').textContent = '';
 
       recordedChunks = [];
@@ -454,22 +768,18 @@
       audioPreview.removeAttribute('src');
       audioPreview.style.display = 'none';
 
-      const btnStart = $('#btnStartRec');
-      const btnStop = $('#btnStopRec');
-      btnStart.disabled = false;
-      btnStop.disabled = true;
-
       if (mediaRecorder && mediaRecorder.state === 'recording') {
         mediaRecorder.stop();
       }
-    });
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(t => t.stop());
+        mediaStream = null;
+      }
 
-    $('#btnStartRec').addEventListener('click', () => {
-      startRecording();
-    });
-
-    $('#btnStopRec').addEventListener('click', () => {
-      stopRecording();
+      const btn = $('#btnRecord');
+      btn.classList.remove('recording');
+      $('#audioStatusMain').textContent = "Enregistrement audio";
+      $('#audioStatusSub').textContent = "Cliquer pour enregistrer, recliquer pour arrêter.";
     });
   </script>
 </body>
