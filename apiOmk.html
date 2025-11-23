@@ -423,8 +423,8 @@
               <input id="mediaItemId" type="number" min="1" placeholder="ex : 1" />
             </div>
             <div>
-              <label for="mediaFile">Fichier (audio / vidéo)</label>
-              <input id="mediaFile" type="file" accept="audio/*,video/*" />
+              <label for="mediaFile">Fichier (image / audio / vidéo)</label>
+              <input id="mediaFile" type="file" accept="image/*,audio/*,video/*" />
               <p class="hint">Tu peux aussi enregistrer un audio ci-dessous.</p>
             </div>
           </div>
@@ -440,6 +440,8 @@
             </div>
           </div>
           <audio id="audioPreview" controls style="display:none;"></audio>
+          <!-- APERÇU IMAGE -->
+          <img id="imagePreview" alt="Aperçu de l’image" style="display:none;max-width:100%;margin-top:8px;border-radius:10px;" />
 
           <div class="btn-row" style="margin-top:10px;">
             <button id="btnAddMedia" class="primary" type="button">Envoyer le média</button>
@@ -468,7 +470,8 @@
     const API_KEY_SECRET = 'zd3HJsk8bvzP79eR89VW7af4mdLelGdU';
 
     function buildApiUrl(path) {
-      const base = $('#apiBase').value.trim().replace(/\/+$/, '');
+      const baseInput = $('#apiBase');
+      const base = baseInput ? baseInput.value.trim().replace(/\/+$/, '') : '';
       if (!base) throw new Error("URL API manquante.");
       const url = new URL(base + path);
       if (API_KEY_ID && API_KEY_SECRET) {
@@ -529,6 +532,8 @@
       const statusSub = $('#audioStatusSub');
       const audioPreview = $('#audioPreview');
 
+      if (!btn || !statusMain || !statusSub || !audioPreview) return;
+
       try {
         mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         recordedChunks = [];
@@ -570,6 +575,8 @@
       const statusMain = $('#audioStatusMain');
       const statusSub = $('#audioStatusSub');
 
+      if (!btn || !statusMain || !statusSub) return;
+
       if (mediaRecorder && mediaRecorder.state === 'recording') {
         mediaRecorder.stop();
       }
@@ -579,207 +586,297 @@
       statusSub.textContent = "Cliquer pour enregistrer, recliquer pour arrêter.";
     }
 
-    $('#btnRecord').addEventListener('click', () => {
-      if (!isRecording) {
-        startRecording();
-      } else {
-        stopRecording();
-      }
-    });
-
-    // LECTURE ITEMS
-    $('#btnFetch').addEventListener('click', async () => {
-      const status = $('#readStatus');
-      const btn = $('#btnFetch');
-
-      status.textContent = 'Chargement…';
-      status.className = 'status';
-      $('#readTable').innerHTML = '';
-      $('#rawRead').textContent = '';
-      btn.disabled = true;
-
-      try {
-        const params = new URLSearchParams();
-        const q = $('#q').value.trim();
-        const perPage = $('#perPage').value.trim() || '25';
-        if (q) params.set('search', q);
-        if (perPage) params.set('per_page', perPage);
-
-        const data = await apiGet(`/items?${params.toString()}`);
-
-        const rows = (Array.isArray(data) ? data : []).map(it => {
-          const id = esc(it['o:id']);
-          const title = (it['dcterms:title'] && it['dcterms:title'][0] && it['dcterms:title'][0]['@value']) || '(sans titre)';
-          const updated = esc(it['o:modified'] || it['o:created'] || '');
-          return `<tr>
-            <td>#${id}</td>
-            <td>${esc(title)}</td>
-            <td>${updated.replace('T',' ').replace('Z','')}</td>
-          </tr>`;
-        }).join('');
-
-        $('#readTable').innerHTML = rows
-          ? `<table><thead><tr><th>ID</th><th>Titre</th><th>Modifié</th></tr></thead><tbody>${rows}</tbody></table>`
-          : '<div class="hint" style="margin-top:6px;">Aucun résultat.</div>';
-
-        $('#rawRead').textContent = JSON.stringify(data, null, 2);
-        status.textContent = `OK – ${Array.isArray(data) ? data.length : 0} item(s).`;
-        status.className = 'status ok';
-      } catch (err) {
-        status.textContent = 'Erreur : ' + err.message;
-        status.className = 'status error';
-      } finally {
-        btn.disabled = false;
-      }
-    });
-
-    $('#btnClearRead').addEventListener('click', () => {
-      $('#q').value = '';
-      $('#perPage').value = 25;
-      $('#readStatus').textContent = '';
-      $('#readStatus').className = 'status';
-      $('#readTable').innerHTML = '';
-      $('#rawRead').textContent = '';
-    });
-
-    // CREATION ITEM
-    $('#btnCreate').addEventListener('click', async () => {
-      const status = $('#writeStatus');
-      const btn = $('#btnCreate');
-
-      status.textContent = 'Envoi…';
-      status.className = 'status';
-      $('#rawWrite').textContent = '';
-      btn.disabled = true;
-
-      try {
-        const title = $('#title').value.trim();
-        const description = $('#description').value.trim();
-
-        if (!title) throw new Error('Titre obligatoire.');
-
-        const payload = {
-          "dcterms:title": [{ "type": "literal", "@value": title }],
-          "dcterms:description": description
-            ? [{ "type": "literal", "@value": description }] : [],
-          "o:is_public": true
-        };
-
-        $('#rawWrite').textContent = 'Payload →\n' + JSON.stringify(payload, null, 2);
-
-        const created = await apiPost('/items', payload);
-        const newId = created && created['o:id'];
-
-        status.textContent = 'Item créé – ID ' + newId;
-        status.className = 'status ok';
-        $('#rawWrite').textContent += '\n\nRéponse ←\n' + JSON.stringify(created, null, 2);
-
-        if (newId) {
-          $('#mediaItemId').value = newId;
-        }
-      } catch (err) {
-        status.textContent = 'Erreur : ' + err.message;
-        status.className = 'status error';
-      } finally {
-        btn.disabled = false;
-      }
-    });
-
-    $('#btnClearWrite').addEventListener('click', () => {
-      $('#title').value = '';
-      $('#description').value = '';
-      $('#writeStatus').textContent = '';
-      $('#writeStatus').className = 'status';
-      $('#rawWrite').textContent = '';
-    });
-
-    // MEDIA
-    $('#btnAddMedia').addEventListener('click', async () => {
-      const status = $('#mediaStatus');
-      const btn = $('#btnAddMedia');
-
-      status.textContent = 'Envoi…';
-      status.className = 'status';
-      $('#rawMedia').textContent = '';
-      btn.disabled = true;
-
-      try {
-        const itemId = $('#mediaItemId').value.trim();
-        const fileInput = $('#mediaFile');
-
-        if (!itemId) throw new Error("ID d’item obligatoire.");
-
-        let file = fileInput.files[0];
-
-        if (!file && recordedBlob) {
-          file = new File(
-            [recordedBlob],
-            'enregistrement.webm',
-            { type: recordedBlob.type || 'audio/webm' }
-          );
-        }
-
-        if (!file) {
-          throw new Error('Choisis un fichier ou enregistre un audio.');
-        }
-
-        const mediaData = {
-          "o:item": { "o:id": Number(itemId) },
-          "o:ingester": "upload",
-          "file_index": 0,
-          "o:is_public": true
-        };
-
-        const fd = new FormData();
-        fd.append('data', JSON.stringify(mediaData));
-        fd.append('file[0]', file);
-
-        $('#rawMedia').textContent =
-          'Payload →\n' + JSON.stringify(mediaData, null, 2) +
-          '\n\nFichier → ' + file.name;
-
-        const createdMedia = await apiPostForm('/media', fd);
-
-        status.textContent =
-          'Média ajouté – ID ' + (createdMedia && createdMedia['o:id']) +
-          ' (item ' + itemId + ')';
-        status.className = 'status ok';
-
-        $('#rawMedia').textContent +=
-          '\n\nRéponse ←\n' + JSON.stringify(createdMedia, null, 2);
-      } catch (err) {
-        status.textContent = 'Erreur : ' + err.message;
-        status.className = 'status error';
-      } finally {
-        btn.disabled = false;
-      }
-    });
-
-    $('#btnClearMedia').addEventListener('click', () => {
-      $('#mediaItemId').value = '';
-      $('#mediaFile').value = '';
-      $('#mediaStatus').textContent = '';
-      $('#mediaStatus').className = 'status';
-      $('#rawMedia').textContent = '';
-
-      recordedChunks = [];
-      recordedBlob = null;
-      const audioPreview = $('#audioPreview');
-      audioPreview.removeAttribute('src');
-      audioPreview.style.display = 'none';
-
-      if (mediaRecorder && mediaRecorder.state === 'recording') {
-        mediaRecorder.stop();
-      }
-      if (mediaStream) {
-        mediaStream.getTracks().forEach(t => t.stop());
-        mediaStream = null;
+    document.addEventListener('DOMContentLoaded', () => {
+      // BOUTON RECORD
+      const btnRecord = $('#btnRecord');
+      if (btnRecord) {
+        btnRecord.addEventListener('click', () => {
+          if (!isRecording) {
+            startRecording();
+          } else {
+            stopRecording();
+          }
+        });
       }
 
-      const btn = $('#btnRecord');
-      btn.classList.remove('recording');
-      $('#audioStatusMain').textContent = "Enregistrement audio";
-      $('#audioStatusSub').textContent = "Cliquer pour enregistrer, recliquer pour arrêter.";
+      // LECTURE ITEMS
+      const btnFetch = $('#btnFetch');
+      if (btnFetch) {
+        btnFetch.addEventListener('click', async () => {
+          const status = $('#readStatus');
+          const tableDiv = $('#readTable');
+          const rawRead = $('#rawRead');
+
+          if (!status || !tableDiv || !rawRead) return;
+
+          status.textContent = 'Chargement…';
+          status.className = 'status';
+          tableDiv.innerHTML = '';
+          rawRead.textContent = '';
+          btnFetch.disabled = true;
+
+          try {
+            const params = new URLSearchParams();
+            const qInput = $('#q');
+            const perPageInput = $('#perPage');
+            const q = qInput ? qInput.value.trim() : '';
+            const perPage = (perPageInput ? perPageInput.value.trim() : '') || '25';
+            if (q) params.set('search', q);
+            if (perPage) params.set('per_page', perPage);
+
+            const data = await apiGet(`/items?${params.toString()}`);
+
+            const rows = (Array.isArray(data) ? data : []).map(it => {
+              const id = esc(it['o:id']);
+              const title = (it['dcterms:title'] && it['dcterms:title'][0] && it['dcterms:title'][0]['@value']) || '(sans titre)';
+              const updated = esc(it['o:modified'] || it['o:created'] || '');
+              return `<tr>
+                <td>#${id}</td>
+                <td>${esc(title)}</td>
+                <td>${updated.replace('T',' ').replace('Z','')}</td>
+              </tr>`;
+            }).join('');
+
+            tableDiv.innerHTML = rows
+              ? `<table><thead><tr><th>ID</th><th>Titre</th><th>Modifié</th></tr></thead><tbody>${rows}</tbody></table>`
+              : '<div class="hint" style="margin-top:6px;">Aucun résultat.</div>';
+
+            rawRead.textContent = JSON.stringify(data, null, 2);
+            status.textContent = `OK – ${Array.isArray(data) ? data.length : 0} item(s).`;
+            status.className = 'status ok';
+          } catch (err) {
+            status.textContent = 'Erreur : ' + err.message;
+            status.className = 'status error';
+          } finally {
+            btnFetch.disabled = false;
+          }
+        });
+      }
+
+      const btnClearRead = $('#btnClearRead');
+      if (btnClearRead) {
+        btnClearRead.addEventListener('click', () => {
+          const qInput = $('#q');
+          const perPageInput = $('#perPage');
+          const status = $('#readStatus');
+          const tableDiv = $('#readTable');
+          const rawRead = $('#rawRead');
+
+          if (qInput) qInput.value = '';
+          if (perPageInput) perPageInput.value = 25;
+          if (status) {
+            status.textContent = '';
+            status.className = 'status';
+          }
+          if (tableDiv) tableDiv.innerHTML = '';
+          if (rawRead) rawRead.textContent = '';
+        });
+      }
+
+      // CREATION ITEM
+      const btnCreate = $('#btnCreate');
+      if (btnCreate) {
+        btnCreate.addEventListener('click', async () => {
+          const status = $('#writeStatus');
+          const rawWrite = $('#rawWrite');
+          const titleInput = $('#title');
+          const descInput = $('#description');
+
+          if (!status || !rawWrite || !titleInput || !descInput) return;
+
+          status.textContent = 'Envoi…';
+          status.className = 'status';
+          rawWrite.textContent = '';
+          btnCreate.disabled = true;
+
+          try {
+            const title = titleInput.value.trim();
+            const description = descInput.value.trim();
+
+            if (!title) throw new Error('Titre obligatoire.');
+
+            const payload = {
+              "dcterms:title": [{ "type": "literal", "@value": title }],
+              "dcterms:description": description
+                ? [{ "type": "literal", "@value": description }] : [],
+              "o:is_public": true
+            };
+
+            rawWrite.textContent = 'Payload →\n' + JSON.stringify(payload, null, 2);
+
+            const created = await apiPost('/items', payload);
+            const newId = created && created['o:id'];
+
+            status.textContent = 'Item créé – ID ' + newId;
+            status.className = 'status ok';
+            rawWrite.textContent += '\n\nRéponse ←\n' + JSON.stringify(created, null, 2);
+
+            const mediaItemId = $('#mediaItemId');
+            if (newId && mediaItemId) {
+              mediaItemId.value = newId;
+            }
+          } catch (err) {
+            status.textContent = 'Erreur : ' + err.message;
+            status.className = 'status error';
+          } finally {
+            btnCreate.disabled = false;
+          }
+        });
+      }
+
+      const btnClearWrite = $('#btnClearWrite');
+      if (btnClearWrite) {
+        btnClearWrite.addEventListener('click', () => {
+          const titleInput = $('#title');
+          const descInput = $('#description');
+          const status = $('#writeStatus');
+          const rawWrite = $('#rawWrite');
+
+          if (titleInput) titleInput.value = '';
+          if (descInput) descInput.value = '';
+          if (status) {
+            status.textContent = '';
+            status.className = 'status';
+          }
+          if (rawWrite) rawWrite.textContent = '';
+        });
+      }
+
+      // APERÇU D'IMAGE
+      const mediaFileInput = $('#mediaFile');
+      if (mediaFileInput) {
+        mediaFileInput.addEventListener('change', () => {
+          const imgPreview = $('#imagePreview');
+
+          if (!imgPreview) return;
+
+          imgPreview.style.display = 'none';
+          imgPreview.removeAttribute('src');
+
+          const file = mediaFileInput.files[0];
+          if (file && file.type.startsWith('image/')) {
+            const url = URL.createObjectURL(file);
+            imgPreview.src = url;
+            imgPreview.style.display = 'block';
+          }
+        });
+      }
+
+      // ENVOI MEDIA
+      const btnAddMedia = $('#btnAddMedia');
+      if (btnAddMedia) {
+        btnAddMedia.addEventListener('click', async () => {
+          const status = $('#mediaStatus');
+          const rawMedia = $('#rawMedia');
+          const itemIdInput = $('#mediaItemId');
+          const fileInput = $('#mediaFile');
+
+          if (!status || !rawMedia || !itemIdInput || !fileInput) return;
+
+          status.textContent = 'Envoi…';
+          status.className = 'status';
+          rawMedia.textContent = '';
+          btnAddMedia.disabled = true;
+
+          try {
+            const itemId = itemIdInput.value.trim();
+
+            if (!itemId) throw new Error("ID d’item obligatoire.");
+
+            let file = fileInput.files[0];
+
+            if (!file && recordedBlob) {
+              file = new File(
+                [recordedBlob],
+                'enregistrement.webm',
+                { type: recordedBlob.type || 'audio/webm' }
+              );
+            }
+
+            if (!file) {
+              throw new Error('Choisis un fichier ou enregistre un audio.');
+            }
+
+            const mediaData = {
+              "o:item": { "o:id": Number(itemId) },
+              "o:ingester": "upload",
+              "file_index": 0,
+              "o:is_public": true
+            };
+
+            const fd = new FormData();
+            fd.append('data', JSON.stringify(mediaData));
+            fd.append('file[0]', file);
+
+            rawMedia.textContent =
+              'Payload →\n' + JSON.stringify(mediaData, null, 2) +
+              '\n\nFichier → ' + file.name;
+
+            const createdMedia = await apiPostForm('/media', fd);
+
+            status.textContent =
+              'Média ajouté – ID ' + (createdMedia && createdMedia['o:id']) +
+              ' (item ' + itemId + ')';
+            status.className = 'status ok';
+
+            rawMedia.textContent +=
+              '\n\nRéponse ←\n' + JSON.stringify(createdMedia, null, 2);
+          } catch (err) {
+            status.textContent = 'Erreur : ' + err.message;
+            status.className = 'status error';
+          } finally {
+            btnAddMedia.disabled = false;
+          }
+        });
+      }
+
+      const btnClearMedia = $('#btnClearMedia');
+      if (btnClearMedia) {
+        btnClearMedia.addEventListener('click', () => {
+          const itemIdInput = $('#mediaItemId');
+          const fileInput = $('#mediaFile');
+          const status = $('#mediaStatus');
+          const rawMedia = $('#rawMedia');
+          const audioPreview = $('#audioPreview');
+          const imgPreview = $('#imagePreview');
+
+          if (itemIdInput) itemIdInput.value = '';
+          if (fileInput) fileInput.value = '';
+          if (status) {
+            status.textContent = '';
+            status.className = 'status';
+          }
+          if (rawMedia) rawMedia.textContent = '';
+
+          recordedChunks = [];
+          recordedBlob = null;
+
+          if (audioPreview) {
+            audioPreview.removeAttribute('src');
+            audioPreview.style.display = 'none';
+          }
+
+          if (imgPreview) {
+            imgPreview.removeAttribute('src');
+            imgPreview.style.display = 'none';
+          }
+
+          if (mediaRecorder && mediaRecorder.state === 'recording') {
+            mediaRecorder.stop();
+          }
+          if (mediaStream) {
+            mediaStream.getTracks().forEach(t => t.stop());
+            mediaStream = null;
+          }
+
+          const btn = $('#btnRecord');
+          if (btn) btn.classList.remove('recording');
+          const statusMain = $('#audioStatusMain');
+          const statusSub = $('#audioStatusSub');
+          if (statusMain) statusMain.textContent = "Enregistrement audio";
+          if (statusSub) statusSub.textContent = "Cliquer pour enregistrer, recliquer pour arrêter.";
+        });
+      }
     });
   </script>
 </body>
