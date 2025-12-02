@@ -20,8 +20,8 @@ Le module utilise une base MySQL locale contenant les données de marée.
 2. Sélectionner la base utilisée par Omeka S.
 3. Aller dans l’onglet "Importer".
 4. Importer le fichier SQL situé dans le dossier :
-   /sql/hauteurs_eau.sql
-   (Remplacer par le nom exact de votre fichier SQL si besoin.)
+   CoastObserver/CoastObserver/maree_cote_dopae.sql
+
 
 5. Valider pour créer les tables nécessaires.
 
