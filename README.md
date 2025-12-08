@@ -45,38 +45,36 @@ Ces éléments multimédias sont interconnectés et consultables par navigation 
 ##  Diagramme entité–relation
 
 erDiagram
-
   USER {
-    int id            "omeka_s.user.id"
-    varchar email     "email"
-    varchar name      "nom complet"
-    datetime created  "date de création"
-    varchar role      "rôle Omeka (global_admin, author, etc.)"
+    int id
+    string email
+    string name
+    datetime created
+    string role
   }
 
   OBSERVATION {
-    int id              "resource.id / item.id"
-    varchar title       "Titre"
-    date dateObservation "coast:dateObservation"
-    varchar lieu        "coast:lieu"
-    text notes          "coast:notes"
+    int id
+    string title
+    date dateObservation
+    string lieu
+    string notes
   }
 
   PHOTO {
-    int id              "resource.id / media.id"
-    varchar file_path   "chemin / storage_id"
-    varchar media_type  "type MIME (image/jpeg, ...)"
-    datetime created    "date d’upload"
+    int id
+    string file_path
+    string media_type
+    datetime created
   }
 
   SECTOR {
-    string label        "valeur de coast:secteur (Côte d’Opale, Ter Bessin…)"
+    string label
   }
 
-  %% Relations principales
-  USER ||--o{ OBSERVATION : "crée"
-  OBSERVATION ||--o{ PHOTO : "a pour photo"
-  SECTOR ||--o{ OBSERVATION : "localise"
+  USER ||--o{ OBSERVATION : cree
+  OBSERVATION ||--o{ PHOTO : a_pour_photo
+  SECTOR ||--o{ OBSERVATION : localise
 
 
 
