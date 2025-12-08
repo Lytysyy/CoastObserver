@@ -1,0 +1,818 @@
+<?php
+// modules/CoastObserver/view/coast-observer/admin/index/index.phtml
+$this->headTitle('CoastObserver – Items & médias');
+?>
+
+<style>
+    /* Loader spinner */
+    .coastobserver-root .loader-spinner {
+      display: inline-block;
+      width: 22px;
+      height: 22px;
+      border: 3px solid #e3edff;
+      border-top: 3px solid #2563eb;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      vertical-align: middle;
+      margin-left: 8px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  :root {
+    --bg-page: #f5f5f7;
+    --bg-card: #ffffff;
+    --border: #e0e0e5;
+    --border-strong: #c7c7d0;
+    --primary: #2563eb;
+    --primary-soft: #e3edff;
+    --danger: #dc2626;
+    --text-main: #111827;
+    --text-muted: #6b7280;
+    --radius-lg: 16px;
+    --radius-md: 10px;
+    --shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+  }
+
+  .coastobserver-root {
+    background: var(--bg-page);
+    padding: 16px;
+    border-radius: 16px;
+  }
+
+  .coastobserver-root * {
+    box-sizing: border-box;
+  }
+
+  .coastobserver-root .app {
+    width: 100%;
+    max-width: 980px;
+    background: var(--bg-card);
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    padding: 18px 18px 20px;
+    margin: 0 auto;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    color: var(--text-main);
+  }
+
+  .coastobserver-root header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .coastobserver-root .title h1 {
+    margin: 0;
+    font-size: 19px;
+    font-weight: 600;
+  }
+
+  .coastobserver-root .title small {
+    display: block;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  .coastobserver-root .tag {
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: #f9fafb;
+  }
+
+  @media (max-width: 900px) {
+    .coastobserver-root header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+
+  .coastobserver-root .card {
+    background: #ffffff;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    padding: 14px 14px 12px;
+    margin-top: 10px;
+  }
+
+  .coastobserver-root .card-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .coastobserver-root .card-title span.icon {
+    font-size: 16px;
+  }
+
+  .coastobserver-root fieldset {
+    border: 0;
+    margin: 0;
+    padding: 0;
+  }
+
+  .coastobserver-root label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    margin: 4px 0 4px;
+  }
+
+  .coastobserver-root input[type="text"],
+  .coastobserver-root input[type="number"],
+  .coastobserver-root textarea {
+    width: 100%;
+    padding: 8px 9px;
+    border-radius: 9px;
+    border: 1px solid var(--border);
+    font-size: 13px;
+  }
+
+  .coastobserver-root input::placeholder,
+  .coastobserver-root textarea::placeholder {
+    color: #9ca3af;
+  }
+
+  .coastobserver-root input:focus,
+  .coastobserver-root textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 1px var(--primary-soft);
+    background: #ffffff;
+  }
+
+  .coastobserver-root input[type="file"] {
+    padding: 6px 0;
+    border: none;
+    background: transparent;
+  }
+
+  .coastobserver-root .row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 10px 12px;
+    align-items: flex-start;
+  }
+
+  .coastobserver-root .hint {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  .coastobserver-root .btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .coastobserver-root button {
+    border: none;
+    border-radius: 999px;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .coastobserver-root button.primary {
+    background: var(--primary);
+    color: #ffffff;
+  }
+
+  .coastobserver-root button.secondary {
+    background: #f3f4f6;
+    color: #111827;
+  }
+
+  .coastobserver-root button.ghost {
+    background: #eef2ff;
+    color: #1e3a8a;
+  }
+
+  .coastobserver-root button:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+
+  .coastobserver-root .status {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 6px;
+    min-height: 16px;
+  }
+
+  .coastobserver-root .status.error {
+    color: var(--danger);
+  }
+
+  .coastobserver-root .status.ok {
+    color: #15803d;
+  }
+
+  .coastobserver-root table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+    font-size: 13px;
+  }
+
+  .coastobserver-root th,
+  .coastobserver-root td {
+    padding: 6px 7px;
+    border-bottom: 1px solid #e5e7eb;
+    text-align: left;
+  }
+
+  .coastobserver-root th {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .coastobserver-root tr:hover td {
+    background: #f3f4f6;
+  }
+
+  .coastobserver-root img#imagePreview {
+    display: none;
+    max-width: 100%;
+    margin-top: 8px;
+    border-radius: 10px;
+  }
+
+  .coastobserver-root details {
+    margin-top: 8px;
+    font-size: 12px;
+  }
+
+  .coastobserver-root summary {
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .coastobserver-root pre {
+    margin-top: 4px;
+    max-height: 200px;
+    overflow: auto;
+    font-size: 11px;
+    background: #0f172a;
+    color: #e5e7eb;
+    padding: 8px 9px;
+    border-radius: var(--radius-md);
+  }
+
+  .coastobserver-root .ia-status {
+    font-size: 11px;
+    color: #4b5563;
+    margin-top: 4px;
+    min-height: 14px;
+  }
+</style>
+
+<div class="coastobserver-root">
+  <div class="app">
+    <header>
+      <div class="title">
+        <h1>CoastObserver – Items & images</h1>
+        <small>1) Lister les items · 2) Ajouter une image avec marée (UTC, secteur) · 3) IA pour le titre</small>
+      </div>
+      <div class="tag">Instance : Geodune</div>
+    </header>
+
+    <!-- CONFIG -->
+    <section class="card">
+      <div class="card-title">
+        <span class="icon">⚙️</span> API Omeka
+      </div>
+      <fieldset>
+        <div class="row">
+          <div>
+            <label for="apiBase">URL de base de l’API</label>
+            <input id="apiBase" type="text" placeholder="http://localhost/omk_THyp_25-26_clone/api" />
+            <p class="hint">
+              Exemple : <code>http://localhost/omk_THyp_25-26_clone/api</code><br>
+              Les clés API sont intégrées dans l’interface.
+            </p>
+          </div>
+        </div>
+      </fieldset>
+    </section>
+
+    <!-- ITEMS -->
+    <section class="card">
+      <div class="card-title">
+        <span class="icon">📦</span> Items (liste rapide)
+      </div>
+      <fieldset>
+        <div class="row" style="margin-bottom:10px;">
+          <div style="flex:1;min-width:0;">
+            <input id="searchInput" type="text" placeholder="Rechercher un item par titre..." style="width:100%;" />
+          </div>
+          <div>
+            <button id="btnSearch" class="ghost" type="button">Rechercher</button>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button id="btnFetch" class="primary" type="button">Lister les items</button>
+          <button id="btnClearRead" class="secondary" type="button">Vider la liste</button>
+        </div>
+
+        <div id="readStatus" class="status"></div>
+        <div id="readTable"></div>
+
+        <details>
+          <summary>JSON brut des items</summary>
+          <pre id="rawRead"></pre>
+        </details>
+      </fieldset>
+    </section>
+
+    <!-- MEDIA IMAGE -->
+    <section class="card">
+      <div class="card-title">
+        <span class="icon">🖼️</span> Ajouter une image à un item
+      </div>
+      <fieldset>
+        <div class="row">
+          <div>
+            <label for="mediaItemId">ID de l’item cible</label>
+            <input id="mediaItemId" type="number" min="1" placeholder="ex : 1" />
+            <p class="hint">Choisis un ID d’item existant (dans la liste au-dessus).</p>
+          </div>
+          <div>
+            <label for="mediaTitle">Titre de l’image</label>
+            <div class="btn-row" style="margin:0;gap:6px;align-items:center;">
+              <input id="mediaTitle" type="text" placeholder="Titre du média" style="flex:1;min-width:0;" />
+              <button id="btnSuggestTitle" type="button" class="ghost">✨ Générer un titre IA</button>
+              <span id="loaderSpinner" class="loader-spinner" style="display:none;"></span>
+            </div>
+            <div id="iaStatus" class="ia-status"></div>
+            <p class="hint">Titre du média (o:title + dcterms:title). Le bouton IA utilise marée + date + secteur.</p>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:8px;">
+          <div>
+            <label for="mediaFile">Fichier image</label>
+            <input id="mediaFile" type="file" accept="image/*" />
+            <p class="hint">Uniquement une image (PNG, JPG, etc.).</p>
+          </div>
+        </div>
+
+        <p class="hint">
+          Métadonnées ajoutées automatiquement à l’envoi :
+          <br>• date/heure UTC (dcterms:date)
+          <br>• secteur = <strong>Côte d’Opale</strong> (dcterms:coverage)
+          <br>• hauteur d’eau (dcterms:extent, min 0 m) depuis <code>maree_cote_dopale</code>
+        </p>
+
+        <img id="imagePreview" alt="Aperçu de l’image" />
+
+        <div class="btn-row" style="margin-top:10px;">
+          <button id="btnAddMedia" class="primary" type="button">Envoyer l’image</button>
+          <button id="btnClearMedia" class="secondary" type="button">Vider le formulaire</button>
+        </div>
+
+        <div id="mediaStatus" class="status"></div>
+
+        <details>
+          <summary>JSON envoyé pour le média</summary>
+          <pre id="rawMedia"></pre>
+        </details>
+      </fieldset>
+    </section>
+  </div>
+</div>
+
+<script>
+    // Barre de recherche pour filtrer les items par titre
+    document.addEventListener('DOMContentLoaded', () => {
+      const searchInput = document.getElementById('searchInput');
+      const btnSearch = document.getElementById('btnSearch');
+      const readTable = document.getElementById('readTable');
+      const rawRead = document.getElementById('rawRead');
+      let itemsCache = [];
+
+      // Après chargement des items, on garde le cache
+      const originalBtnFetch = document.getElementById('btnFetch');
+      if (originalBtnFetch) {
+        const origHandler = originalBtnFetch.onclick;
+        originalBtnFetch.addEventListener('click', async () => {
+          // On garde le cache des items
+          setTimeout(() => {
+            try {
+              itemsCache = JSON.parse(rawRead.textContent);
+            } catch {}
+          }, 500);
+        });
+      }
+
+      if (btnSearch && searchInput && readTable) {
+        btnSearch.addEventListener('click', () => {
+          const query = searchInput.value.trim().toLowerCase();
+          if (!itemsCache || !Array.isArray(itemsCache) || !query) return;
+          const filtered = itemsCache.filter(it => {
+            const title = (it['dcterms:title'] && it['dcterms:title'][0] && it['dcterms:title'][0]['@value']) || '';
+            return title.toLowerCase().includes(query);
+          });
+          const rows = filtered.map(it => {
+            const id = esc(it['o:id']);
+            const title = (it['dcterms:title'] && it['dcterms:title'][0] && it['dcterms:title'][0]['@value']) || '(sans titre)';
+            const updated = esc(it['o:modified'] || it['o:created'] || '');
+            return `<tr><td>#${id}</td><td>${esc(title)}</td><td>${updated.replace('T',' ').replace('Z','')}</td></tr>`;
+          }).join('');
+          readTable.innerHTML = rows
+            ? `<table><thead><tr><th>ID</th><th>Titre</th><th>Modifié</th></tr></thead><tbody>${rows}</tbody></table>`
+            : '<div class="hint" style="margin-top:6px;">Aucun résultat.</div>';
+        });
+      }
+    });
+  // URLs générées par Omeka (gèrent le /omk_THyp_25-26_clone/)
+  const TIDE_URL = '<?= $this->url('admin/coast-observer/tide-height'); ?>';
+  const SUGGEST_TITLE_URL = '<?= $this->url('admin/coast-observer/suggest-title'); ?>';
+
+  const $ = sel => document.querySelector(sel);
+  const esc = s => (s ?? "").toString().replace(/[&<>"']/g, c => (
+    {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]
+  ));
+
+  // CLÉS API FIXES
+  const API_KEY_ID = 'ab2dPIwoP9u6JJQTEy8aieh0GPaTcj6E';
+  const API_KEY_SECRET = 'zd3HJsk8bvzP79eR89VW7af4mdLelGdU';
+
+  function buildApiUrl(path) {
+    const baseInput = $('#apiBase');
+    const base = baseInput ? baseInput.value.trim().replace(/\/+$/, '') : '';
+    if (!base) throw new Error("URL API manquante.");
+    const url = new URL(base + path);
+    if (API_KEY_ID && API_KEY_SECRET) {
+      url.searchParams.set('key_identity', API_KEY_ID);
+      url.searchParams.set('key_credential', API_KEY_SECRET);
+    }
+    return url.toString();
+  }
+
+  async function apiGet(path) {
+    const url = buildApiUrl(path);
+    const res = await fetch(url, { method: 'GET' });
+    if (!res.ok) throw new Error(`GET ${url} → ${res.status} ${res.statusText}`);
+    return res.json();
+  }
+
+  async function apiPostForm(path, formData) {
+    const url = buildApiUrl(path);
+    const res = await fetch(url, {
+      method: 'POST',
+      body: formData
+    });
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); } catch { data = text; }
+    if (!res.ok) {
+      throw new Error(`POST ${url} → ${res.status} ${res.statusText}\n${text}`);
+    }
+    return data;
+  }
+
+  function initCoastObserver() {
+    // LISTE DES ITEMS
+    const btnFetch = $('#btnFetch');
+    if (btnFetch) {
+      btnFetch.addEventListener('click', async () => {
+        const status = $('#readStatus');
+        const tableDiv = $('#readTable');
+        const rawRead = $('#rawRead');
+
+        if (!status || !tableDiv || !rawRead) return;
+
+        status.textContent = 'Chargement…';
+        status.className = 'status';
+        tableDiv.innerHTML = '';
+        rawRead.textContent = '';
+        btnFetch.disabled = true;
+
+        try {
+          const params = new URLSearchParams();
+          params.set('per_page', '50');
+
+          const data = await apiGet(`/items?${params.toString()}`);
+
+          const rows = (Array.isArray(data) ? data : []).map(it => {
+            const id = esc(it['o:id']);
+            const title = (it['o:title'])
+              || (it['dcterms:title'] && it['dcterms:title'][0] && it['dcterms:title'][0]['@value'])
+              || '(sans titre)';
+            const updated = esc(it['o:modified'] || it['o:created'] || '');
+            return `
+              <tr>
+                <td>#${id}</td>
+                <td>${esc(title)}</td>
+                <td>${updated.replace('T',' ').replace('Z','')}</td>
+              </tr>`;
+          }).join('');
+
+          tableDiv.innerHTML = rows
+            ? `<table><thead><tr><th>ID</th><th>Titre</th><th>Modifié</th></tr></thead><tbody>${rows}</tbody></table>`
+            : '<div class="hint" style="margin-top:6px;">Aucun résultat.</div>';
+
+          rawRead.textContent = JSON.stringify(data, null, 2);
+          status.textContent = `OK – ${Array.isArray(data) ? data.length : 0} item(s).`;
+          status.className = 'status ok';
+        } catch (err) {
+          status.textContent = 'Erreur : ' + err.message;
+          status.className = 'status error';
+        } finally {
+          btnFetch.disabled = false;
+        }
+      });
+    }
+
+    const btnClearRead = $('#btnClearRead');
+    if (btnClearRead) {
+      btnClearRead.addEventListener('click', () => {
+        const status = $('#readStatus');
+        const tableDiv = $('#readTable');
+        const rawRead = $('#rawRead');
+
+        if (status) {
+          status.textContent = '';
+          status.className = 'status';
+        }
+        if (tableDiv) tableDiv.innerHTML = '';
+        if (rawRead) rawRead.textContent = '';
+      });
+    }
+
+    // APERÇU IMAGE
+    const mediaFileInput = $('#mediaFile');
+    if (mediaFileInput) {
+      mediaFileInput.addEventListener('change', () => {
+        const imgPreview = $('#imagePreview');
+        if (!imgPreview) return;
+
+        imgPreview.style.display = 'none';
+        imgPreview.removeAttribute('src');
+
+        const file = mediaFileInput.files[0];
+        if (file && file.type.startsWith('image/')) {
+          const url = URL.createObjectURL(file);
+          imgPreview.src = url;
+          imgPreview.style.display = 'block';
+        }
+      });
+    }
+
+    // 💡 BOUTON IA : Générer un titre
+    const btnSuggestTitle = $('#btnSuggestTitle');
+    if (btnSuggestTitle) {
+      btnSuggestTitle.addEventListener('click', async () => {
+        const iaStatus = $('#iaStatus');
+        const mediaTitleInput = $('#mediaTitle');
+
+        if (!iaStatus || !mediaTitleInput) return;
+
+        iaStatus.textContent = 'IA : calcul du titre…';
+        btnSuggestTitle.disabled = true;
+        const loaderSpinner = document.getElementById('loaderSpinner');
+        if (loaderSpinner) loaderSpinner.style.display = 'inline-block';
+
+        try {
+          // 1) Date/heure UTC actuelle
+          const nowUtcIso = new Date().toISOString();
+
+          // 2) On récupère d’abord la hauteur d’eau depuis le module (tide-height)
+          let hauteurEau = 0;
+          try {
+            const tideRes = await fetch(
+              TIDE_URL + '?datetime=' + encodeURIComponent(nowUtcIso) + '&sector=cote_dopale'
+            );
+            if (tideRes.ok) {
+              const tideJson = await tideRes.json();
+              if (tideJson.success && tideJson.hauteur_eau !== undefined && tideJson.hauteur_eau !== null) {
+                const parsed = parseFloat(tideJson.hauteur_eau);
+                if (!Number.isNaN(parsed)) {
+                  hauteurEau = parsed;
+                }
+              }
+            }
+          } catch (e) {
+            console.warn('Erreur marée pour IA :', e);
+          }
+
+          // 3) Appel au endpoint IA (suggest-title)
+          const suggestUrl = new URL(SUGGEST_TITLE_URL, window.location.origin);
+          suggestUrl.searchParams.set('height', hauteurEau.toString());
+          suggestUrl.searchParams.set('datetime', nowUtcIso);
+          suggestUrl.searchParams.set('sector', 'Cote dOpale');
+
+          const iaRes = await fetch(suggestUrl.toString());
+          if (!iaRes.ok) {
+            throw new Error('HTTP ' + iaRes.status + ' ' + iaRes.statusText);
+          }
+          const iaJson = await iaRes.json();
+          console.log('IA suggest-title →', iaJson);
+
+          if (!iaJson.success) {
+            throw new Error(iaJson.error || 'Erreur IA inconnue');
+          }
+
+          const title = (iaJson.title || '').trim();
+          if (!title) {
+            throw new Error('Titre vide renvoyé par IA');
+          }
+
+          mediaTitleInput.value = title;
+          iaStatus.textContent = 'Titre IA appliqué ✔️';
+
+        } catch (err) {
+          iaStatus.textContent = 'IA : ' + err.message;
+        } finally {
+          btnSuggestTitle.disabled = false;
+          if (loaderSpinner) loaderSpinner.style.display = 'none';
+        }
+      });
+    }
+
+    // ENVOI DU MEDIA IMAGE AVEC HAUTEUR D'EAU
+    const btnAddMedia = $('#btnAddMedia');
+    if (btnAddMedia) {
+      btnAddMedia.addEventListener('click', async () => {
+        const status = $('#mediaStatus');
+        const rawMedia = $('#rawMedia');
+        const itemIdInput = $('#mediaItemId');
+        const mediaTitleInput = $('#mediaTitle');
+        const fileInput = $('#mediaFile');
+
+        if (!status || !rawMedia || !itemIdInput || !fileInput) return;
+
+        status.textContent = 'Envoi…';
+        status.className = 'status';
+        rawMedia.textContent = '';
+        btnAddMedia.disabled = true;
+
+        try {
+          const itemId = itemIdInput.value.trim();
+          const mediaTitle = mediaTitleInput ? mediaTitleInput.value.trim() : '';
+          let file = fileInput.files[0];
+
+          if (!itemId) {
+            throw new Error("ID d’item obligatoire.");
+          }
+
+          if (!file) {
+            throw new Error('Choisis un fichier image.');
+          }
+
+          if (!file.type.startsWith('image/')) {
+            throw new Error('Le fichier doit être une image (PNG, JPG…).');
+          }
+
+          // 1) Date/heure actuelle en UTC (ISO 8601)
+          const nowUtcIso = new Date().toISOString();
+
+          // 2) Hauteur d'eau via le module (tide-height)
+          let hauteurEau = 0;
+          try {
+            const tideRes = await fetch(
+              TIDE_URL + '?datetime=' + encodeURIComponent(nowUtcIso) + '&sector=cote_dopale'
+            );
+            if (tideRes.ok) {
+              const tideJson = await tideRes.json();
+              console.log('Réponse marée :', tideJson);
+
+              if (tideJson.success && tideJson.hauteur_eau !== undefined && tideJson.hauteur_eau !== null) {
+                const parsed = parseFloat(tideJson.hauteur_eau);
+                if (!Number.isNaN(parsed)) {
+                  hauteurEau = parsed;
+                } else {
+                  console.warn('Hauteur marée non numérique, on garde 0 →', tideJson.hauteur_eau);
+                }
+              } else {
+                console.warn('Marée :', tideJson.error || 'pas de donnée, hauteur=0');
+              }
+            } else {
+              console.warn('Erreur HTTP marée :', tideRes.status, tideRes.statusText);
+            }
+          } catch (e) {
+            console.warn('Erreur appel marée :', e, ' → hauteur=0');
+          }
+
+          // 3) Métadonnées du média — schéma Omeka (ressource + Dublin Core)
+          const mediaData = {
+            "o:item": { "o:id": Number(itemId) },
+            "o:ingester": "upload",
+            "file_index": 0,
+            "o:is_public": true,
+
+            // Titre natif du média
+            "o:title": mediaTitle || "Image sans titre",
+
+            // Titre Dublin Core
+            "dcterms:title": mediaTitle
+              ? [{
+                  "type": "literal",
+                  "property_id": "auto",
+                  "@value": mediaTitle
+                }]
+              : [],
+
+            // Date UTC
+            "dcterms:date": [
+              {
+                "type": "literal",
+                "property_id": "auto",
+                "@value": nowUtcIso
+              }
+            ],
+
+            // Secteur
+            "dcterms:coverage": [
+              {
+                "type": "literal",
+                "property_id": "auto",
+                "@value": "Côte d’Opale"
+              }
+            ],
+
+            // Hauteur d'eau (0 m si aucune donnée)
+            "dcterms:extent": [
+              {
+                "type": "literal",
+                "property_id": "auto",
+                "@value": `${hauteurEau} m`
+              }
+            ]
+          };
+
+          const fd = new FormData();
+          fd.append('data', JSON.stringify(mediaData));
+          fd.append('file[0]', file);
+
+          rawMedia.textContent =
+            'Payload →\n' + JSON.stringify(mediaData, null, 2) +
+            '\n\nFichier → ' + file.name;
+
+          const createdMedia = await apiPostForm('/media', fd);
+
+          status.textContent =
+            'Image ajoutée – média ID ' + (createdMedia && createdMedia['o:id']) +
+            ' (item ' + itemId + ')';
+          status.className = 'status ok';
+
+          rawMedia.textContent +=
+            '\n\nRéponse ←\n' + JSON.stringify(createdMedia, null, 2);
+
+        } catch (err) {
+          status.textContent = 'Erreur : ' + err.message;
+          status.className = 'status error';
+        } finally {
+          btnAddMedia.disabled = false;
+        }
+      });
+    }
+
+    const btnClearMedia = $('#btnClearMedia');
+    if (btnClearMedia) {
+      btnClearMedia.addEventListener('click', () => {
+        const itemIdInput = $('#mediaItemId');
+        const mediaTitleInput = $('#mediaTitle');
+        const fileInput = $('#mediaFile');
+        const status = $('#mediaStatus');
+        const rawMedia = $('#rawMedia');
+        const imgPreview = $('#imagePreview');
+        const iaStatus = $('#iaStatus');
+
+        if (itemIdInput) itemIdInput.value = '';
+        if (mediaTitleInput) mediaTitleInput.value = '';
+        if (fileInput) fileInput.value = '';
+        if (status) {
+          status.textContent = '';
+          status.className = 'status';
+        }
+        if (rawMedia) rawMedia.textContent = '';
+        if (imgPreview) {
+          imgPreview.removeAttribute('src');
+          imgPreview.style.display = 'none';
+        }
+        if (iaStatus) iaStatus.textContent = '';
+      });
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', initCoastObserver);
+</script>
