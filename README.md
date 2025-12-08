@@ -47,62 +47,37 @@ Ces éléments multimédias sont interconnectés et consultables par navigation 
 erDiagram
 
   USER {
-    int id
-    varchar email
-    varchar name
-    datetime created
-    varchar role
+    int id            "omeka_s.user.id"
+    varchar email     "email"
+    varchar name      "nom complet"
+    datetime created  "date de création"
+    varchar role      "rôle Omeka (global_admin, author, etc.)"
   }
 
-  RESOURCE {
-    int id
-    int owner_id
-    int resource_class_id
-    varchar resource_type
-    datetime created
+  OBSERVATION {
+    int id              "resource.id / item.id"
+    varchar title       "Titre"
+    date dateObservation "coast:dateObservation"
+    varchar lieu        "coast:lieu"
+    text notes          "coast:notes"
   }
 
-  ITEM {
-    int id  "hérite de RESOURCE.id"
-    int primary_media_id
+  PHOTO {
+    int id              "resource.id / media.id"
+    varchar file_path   "chemin / storage_id"
+    varchar media_type  "type MIME (image/jpeg, ...)"
+    datetime created    "date d’upload"
   }
 
-  MEDIA {
-    int id  "hérite de RESOURCE.id"
-    varchar storage_id
-    varchar media_type
+  SECTOR {
+    string label        "valeur de coast:secteur (Côte d’Opale, Ter Bessin…)"
   }
 
-  ITEMSET {
-    int id "hérite de RESOURCE.id"
-    bool is_open
-  }
+  %% Relations principales
+  USER ||--o{ OBSERVATION : "crée"
+  OBSERVATION ||--o{ PHOTO : "a pour photo"
+  SECTOR ||--o{ OBSERVATION : "localise"
 
-  VALUE {
-    int id
-    int resource_id
-    int property_id
-    text value
-  }
-
-  PROPERTY {
-    int id
-    int vocabulary_id
-    varchar local_name
-    varchar label
-  }
-
-  USER ||--o{ RESOURCE : "possède"
-  RESOURCE ||--o| ITEM : "type Item"
-  RESOURCE ||--o| MEDIA : "type Media"
-  RESOURCE ||--o| ITEMSET : "type ItemSet"
-
-  ITEM ||--o{ MEDIA : "contient"
-  ITEM ||--o{ VALUE : "métadonnées"
-
-  ITEMSET ||--o{ ITEM : "groupe via item_item_set"
-
-  PROPERTY ||--o{ VALUE : "définit"
 
 
 
