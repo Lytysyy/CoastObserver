@@ -26,4 +26,17 @@ Module Omeka S pour la gestion et l’observation des marées sur différents se
   - `/admin/coast-observer` : page d’accueil du module
   - `/admin/coast-observer/tide-height` : endpoint JSON pour obtenir la hauteur de marée
   - `/admin/coast-observer/suggest-title` : endpoint pour suggestions via IA
+ 
+
+## Fichier de données de test
+
+Le fichier `maree_cote_dopale_insert.sql` contient des requêtes SQL permettant d’insérer des hauteurs d’eau toutes les minutes entre 10h00 et 12h00 pour le secteur `cote_dopale`.
+
+Ce fichier est utile pour :
+- Tester le module avec des données réalistes
+- Permettre à un professeur ou à un utilisateur de peupler rapidement la base de données
+
+**Utilisation** :
+- Importez le fichier dans votre base via phpMyAdmin ou tout outil SQL compatible.
+- La table doit contenir les champs : `id` (auto-incrémenté), `date_heure`, `hauteur_eau`.
 
