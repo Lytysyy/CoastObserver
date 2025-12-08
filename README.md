@@ -1,7 +1,3 @@
-crendential : zd3HJsk8bvzP79eR89VW7af4mdLelGdU
-identity : ab2dPIwoP9u6JJQTEy8aieh0GPaTcj6E	
-
-
 
 # CoastObserver
 
