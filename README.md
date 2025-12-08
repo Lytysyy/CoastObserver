@@ -52,7 +52,6 @@ erDiagram
     datetime created
     string role
   }
-
   OBSERVATION {
     int id
     string title
@@ -60,22 +59,19 @@ erDiagram
     string lieu
     string notes
   }
-
   PHOTO {
     int id
     string file_path
     string media_type
     datetime created
   }
-
   SECTOR {
     string label
   }
 
-  USER ||--o{ OBSERVATION : cree
-  OBSERVATION ||--o{ PHOTO : a_pour_photo
-  SECTOR ||--o{ OBSERVATION : localise
-
+  USER ||--o{ OBSERVATION : "crée"
+  OBSERVATION ||--o{ PHOTO : "a_pour_photo"
+  SECTOR ||--o{ OBSERVATION : "localise"
 
 
 
