@@ -41,7 +41,7 @@ Le projet illustre une approche **hypermédia**, car il relie différents types 
 
 Ces éléments multimédias sont interconnectés et consultables par navigation interactive, démontrant la **dimension hypermédia** du projet.
 ### Prompt utilisé pour générer le modèle entité-association (ERD) avec ChatGPT 4
-- Génère un diagramme entité-association (ERD) pour un module Omeka qui gère des observations de marée.
+Génère un diagramme entité-association (ERD) pour un module Omeka qui gère des observations de marée.
 Les fonctionnalités du module sont :
 
 Enregistrement d’observations de marée (date, secteur, hauteur, notes)
