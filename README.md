@@ -43,6 +43,7 @@ Ces éléments multimédias sont interconnectés et consultables par navigation 
 
 
 ##  Diagramme entité–relation
+```mermaid
 
 erDiagram
   USER {
