@@ -46,33 +46,33 @@ Ces éléments multimédias sont interconnectés et consultables par navigation 
 ```mermaid
 
 erDiagram
-  USER {
+  ADMIN {
     int id
+    string username
     string email
-    string name
-    datetime created
     string role
   }
-  OBSERVATION {
+  TIDE_OBSERVATION {
     int id
-    string title
-    date dateObservation
-    string lieu
+    datetime datetime
+    string sector
+    float tide_height
     string notes
-  }
-  PHOTO {
-    int id
-    string file_path
-    string media_type
-    datetime created
   }
   SECTOR {
     string label
   }
+  AI_PROMPT {
+    int id
+    string model
+    string prompt
+    string response
+    datetime created
+  }
 
-  USER ||--o{ OBSERVATION : "crée"
-  OBSERVATION ||--o{ PHOTO : "a_pour_photo"
-  SECTOR ||--o{ OBSERVATION : "localise"
+  ADMIN ||--o{ TIDE_OBSERVATION : "enregistre"
+  SECTOR ||--o{ TIDE_OBSERVATION : "localise"
+  ADMIN ||--o{ AI_PROMPT : "utilise"
 
 
 
