@@ -3,10 +3,10 @@
 
 Plateforme hypermédia participative de suivi du littoral
  
-Ce projet a pour objectif de créer une plateforme web hypermédia inspirée du programme CoastSnap, permettant le suivi participatif du littoralbà partir de **photos géolocalisées** envoyées par les utilisateurs.
+Ce projet a pour objectif de créer une plateforme web hypermédia inspirée du programme CoastSnap, permettant le suivi participatif du littoral à partir de **photos géolocalisées** envoyées par les utilisateurs.
 
 Les citoyens peuvent déposer des **images** prises depuis des points fixes sur la côte. Ces photos sont associées à des **métadonnées** (date, lieu, auteur, coordonnées GPS) et sont **enregistrées dans une base de données**.  
-Elles sont ensuite **affichées sur une carte interactive**  permettant d’observer visuellement l’évolution des sites côtiers dans le temps.
+
 
 Le projet illustre une approche **hypermédia**, car il relie différents types de médias (texte, image, carte, données) et permet une **navigation non linéaire et interactive** entre les informations.
 
@@ -14,8 +14,7 @@ Le projet illustre une approche **hypermédia**, car il relie différents types 
 
 ##  Objectifs du projet
 - Développer une application web permettant la **collecte participative de photos** du littoral.  
-- Créer une **base de données** pour stocker les utilisateurs, les images et leurs métadonnées selon le secteur , site .  
-- Mettre en place une **carte interactive** pour visualiser les observations citoyennes.  
+- Créer une **base de données** pour stocker les images et leurs métadonnées selon le secteur , site .  
 - Valoriser les **données multimédias**.  
 - Promouvoir la **science citoyenne** et la **sensibilisation environnementale** via les technologies du web.  
 
@@ -45,43 +44,65 @@ Ces éléments multimédias sont interconnectés et consultables par navigation 
 
 ##  Diagramme entité–relation
 
-```mermaid
 erDiagram
+
   USER {
     int id
-    string nom
-    string prenom
     varchar email
-    datetime cree_en "date d'entrée"
+    varchar name
+    datetime created
+    varchar role
   }
 
-  SECTOR {
+  RESOURCE {
     int id
-    varchar code
-    string name
+    int owner_id
+    int resource_class_id
+    varchar resource_type
+    datetime created
   }
 
-  PHOTO {
+  ITEM {
+    int id  "hérite de RESOURCE.id"
+    int primary_media_id
+  }
+
+  MEDIA {
+    int id  "hérite de RESOURCE.id"
+    varchar storage_id
+    varchar media_type
+  }
+
+  ITEMSET {
+    int id "hérite de RESOURCE.id"
+    bool is_open
+  }
+
+  VALUE {
     int id
-    int user_id
-    int sector_id
-    varchar file_path
-    varchar location_nom
-    datetime date_taken
-    datetime uploaded_at
+    int resource_id
+    int property_id
+    text value
   }
 
-  OBSERVATION {
+  PROPERTY {
     int id
-    int photo_id
-    decimal hauteur_eau "hauteur d'eau en mètres"
-    text commentaire
-    datetime created_at
+    int vocabulary_id
+    varchar local_name
+    varchar label
   }
 
-  USER ||--o{ PHOTO : "envoie"
-  SECTOR ||--o{ PHOTO : "localise"
-  PHOTO ||--o{ OBSERVATION : "associe une mesure"
+  USER ||--o{ RESOURCE : "possède"
+  RESOURCE ||--o| ITEM : "type Item"
+  RESOURCE ||--o| MEDIA : "type Media"
+  RESOURCE ||--o| ITEMSET : "type ItemSet"
+
+  ITEM ||--o{ MEDIA : "contient"
+  ITEM ||--o{ VALUE : "métadonnées"
+
+  ITEMSET ||--o{ ITEM : "groupe via item_item_set"
+
+  PROPERTY ||--o{ VALUE : "définit"
 
 
 
